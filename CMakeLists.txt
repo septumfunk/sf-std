@@ -4,8 +4,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-set(WINDOWS_EXPORT_ALL_SYMBOLS ON)
-set(SF_LIBRARY_TYPE STATIC)
+if (BUILD_SHARED_LIBS)
+    set(SF_LIBRARY_TYPE STATIC)
+endif()
 
 project(sf-structures C)
 
@@ -23,6 +24,9 @@ target_compile_options(sf-structures PRIVATE
     -Wnull-dereference -Wstrict-overflow
 )
 
-if(WIN32)
-    target_compile_definitions(sf-structures PRIVATE SF_EXPORTS)
+if (WIN32)
+    if (BUILD_SHARED_LIBS)
+        target_compile_definitions(sf-structures PUBLIC SF_DYNAMIC)
+        target_compile_definitions(sf-structures PRIVATE SF_EXPORTS)
+    endif()
 endif()
