@@ -2,3 +2,4 @@ build
 build/
 *.exe
 *.o
+.cache
