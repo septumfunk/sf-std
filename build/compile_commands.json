@@ -1,0 +1,14 @@
+[
+{
+  "directory": "D:/Code/sf-structures/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\clang.exe -DSF_EXPORTS -ID:/Code/sf-structures/include -g -std=gnu23 -Wall -Werror -Wextra -pedantic -Wconversion -Wsign-conversion -Wformat=2 -Wundef -Wold-style-cast -Woverloaded-virtual -Wdouble-promotion -Wnon-virtual-dtor -Wnull-dereference -Wstrict-overflow -o CMakeFiles\\sf-structures.dir\\src\\str.c.obj -c D:\\Code\\sf-structures\\src\\str.c",
+  "file": "D:\\Code\\sf-structures\\src\\str.c",
+  "output": "CMakeFiles\\sf-structures.dir\\src\\str.c.obj"
+},
+{
+  "directory": "D:/Code/sf-structures/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\clang.exe -DSF_EXPORTS -ID:/Code/sf-structures/include -g -std=gnu23 -Wall -Werror -Wextra -pedantic -Wconversion -Wsign-conversion -Wformat=2 -Wundef -Wold-style-cast -Woverloaded-virtual -Wdouble-promotion -Wnon-virtual-dtor -Wnull-dereference -Wstrict-overflow -o CMakeFiles\\sf-structures.dir\\src\\dynamic.c.obj -c D:\\Code\\sf-structures\\src\\dynamic.c",
+  "file": "D:\\Code\\sf-structures\\src\\dynamic.c",
+  "output": "CMakeFiles\\sf-structures.dir\\src\\dynamic.c.obj"
+}
+]
