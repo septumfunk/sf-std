@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "str.h"
-#include "result.h"
+#include "sf/str.h"
+#include "sf/result.h"
 
 #define SF_MAP_DEFAULT_BUCKETS 8
 

@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "dynamic.h"
-#include "numerics.h"
+#include "sf/dynamic.h"
+#include "sf/numerics.h"
 
 #define PRIME 0x01000193
 #define SEED 0x811C9DC5

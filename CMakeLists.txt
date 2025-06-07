@@ -13,7 +13,7 @@ add_library(sf-structures ${SF_LIBRARY_TYPE}
     src/str.c
     src/dynamic.c
 )
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(sf-structures PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_compile_options(sf-structures PRIVATE
     -Wall -Werror -Wextra -pedantic -Wconversion

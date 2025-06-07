@@ -1,6 +1,6 @@
-#include "numerics.h"
 #include <stdlib.h>
 #include <time.h>
+#include "sf/numerics.h"
 
 sf_str sf_transform_str(const sf_transform transform) {
     sf_str pos_str = sf_vec3_str(transform.position);
