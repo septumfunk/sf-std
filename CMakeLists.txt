@@ -27,6 +27,7 @@ target_compile_options(sf-structures PRIVATE
 
 if (WIN32)
     if (BUILD_SHARED_LIBS)
+        set(CMAKE_SHARED_LIBRARY_PREFIX "")
         target_compile_definitions(sf-structures PUBLIC SF_DYNAMIC)
         target_compile_definitions(sf-structures PRIVATE SF_EXPORTS)
     endif()
