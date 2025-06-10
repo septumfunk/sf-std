@@ -9,15 +9,15 @@ if (BUILD_SHARED_LIBS)
     set(SF_LIBRARY_TYPE SHARED)
 endif()
 
-project(sf-structures C)
+project(sf-std C)
 
-add_library(sf-structures ${SF_LIBRARY_TYPE}
+add_library(sf-std ${SF_LIBRARY_TYPE}
     src/str.c
     src/dynamic.c
 )
-target_include_directories(sf-structures PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(sf-std PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_compile_options(sf-structures PRIVATE
+target_compile_options(sf-std PRIVATE
     -Wall -Werror -Wextra -pedantic -Wconversion
     -Wsign-conversion -Wformat=2 -Wundef
     -Wold-style-cast -Woverloaded-virtual
@@ -28,7 +28,7 @@ target_compile_options(sf-structures PRIVATE
 if (WIN32)
     if (BUILD_SHARED_LIBS)
         set(CMAKE_SHARED_LIBRARY_PREFIX "")
-        target_compile_definitions(sf-structures PUBLIC SF_DYNAMIC)
-        target_compile_definitions(sf-structures PRIVATE SF_EXPORTS)
+        target_compile_definitions(sf-std PUBLIC SF_DYNAMIC)
+        target_compile_definitions(sf-std PRIVATE SF_EXPORTS)
     endif()
 endif()
