@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
-#include "sf/files.h"
+#include "sf/fs.h"
 
 long sf_file_size(sf_str path) {
     struct stat s;
