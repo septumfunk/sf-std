@@ -17,7 +17,7 @@ typedef struct {
 } sf_vec2;
 /// Constructs a string representation of a vec2.
 [[nodiscard(SF_STR_LEAKED)]]
-inline sf_str sf_vec2_str(const sf_vec2 vec2) { return sf_str_fmt("{ %f, %f }", (double)vec2.x, (double)vec2.y); }
+static inline sf_str sf_vec2_str(const sf_vec2 vec2) { return sf_str_fmt("{ %f, %f }", (double)vec2.x, (double)vec2.y); }
 
 /// A single point in 3d space.
 typedef struct {
@@ -25,7 +25,7 @@ typedef struct {
 } sf_vec3;
 /// String representation of a vec3.
 [[nodiscard(SF_STR_LEAKED)]]
-inline sf_str sf_vec3_str(const sf_vec3 vec3) { return sf_str_fmt("{ %f, %f, %f }", (double)vec3.x, (double)vec3.y, (double)vec3.z); }
+static inline sf_str sf_vec3_str(const sf_vec3 vec3) { return sf_str_fmt("{ %f, %f, %f }", (double)vec3.x, (double)vec3.y, (double)vec3.z); }
 
 /// A representation of a transformation in 3d space.
 typedef struct {
