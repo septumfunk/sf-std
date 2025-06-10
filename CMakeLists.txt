@@ -14,6 +14,8 @@ project(sf-std C)
 add_library(sf-std ${SF_LIBRARY_TYPE}
     src/str.c
     src/dynamic.c
+    src/numerics.c
+    src/files.c
 )
 target_include_directories(sf-std PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
