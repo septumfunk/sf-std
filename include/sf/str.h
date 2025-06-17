@@ -42,10 +42,9 @@ EXPORT sf_str sf_str_dup(const sf_str string);
 /// Duplicate a c-string into a sf_str.
 [[nodiscard(SF_STR_LEAKED)]]
 static inline sf_str sf_str_cdup(const char *string) { return sf_str_dup(sf_ref(string)); }
-///
 
 /// Returns 0 if two strings are lexographically equal.
-EXPORT int sf_str_cmp(const sf_str str1, const sf_str str2);
+EXPORT int sf_str_cmp(sf_str str1, const sf_str str2);
 /// Returns true if two strings are lexographically equal.
 static inline bool sf_str_eq(const sf_str str1, const sf_str str2) { return sf_str_cmp(str1, str2) == 0; }
 

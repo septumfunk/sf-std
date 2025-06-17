@@ -3,8 +3,8 @@
 
 #include "str.h"
 
-/// The result of a function. `result.ok` indicates success, and the presence of a string in `result.err` indicates failure if `result.is_err` is true,
-/// otherwise indicating a warning or message.
+/// The result of a function. `result.ok` indicates success, and the presence of a string in `result.err` indicates
+/// failure if `result.ok` is false, otherwise indicating a warning or message.
 typedef struct {
     bool ok;
     sf_str err;

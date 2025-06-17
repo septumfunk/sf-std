@@ -21,10 +21,8 @@ target_include_directories(sf-std PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_compile_options(sf-std PRIVATE
     -Wall -Werror -Wextra -pedantic -Wconversion
-    -Wsign-conversion -Wformat=2 -Wundef
-    -Wold-style-cast -Woverloaded-virtual
-    -Wdouble-promotion -Wnon-virtual-dtor
-    -Wnull-dereference -Wstrict-overflow
+    -Wsign-conversion -Wformat=2 -Wundef -Wno-format-nonliteral
+    -Wdouble-promotion -Wnull-dereference -Wstrict-overflow
 )
 
 if (WIN32)
