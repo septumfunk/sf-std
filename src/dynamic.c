@@ -64,24 +64,30 @@ void sf_map_rehash(sf_map *self, const uint64_t new_bucket_count) {
     sf_key_value *pairs = nullptr;
     for (uint64_t i = 0; i < self->bucket_count; ++i) {
         sf_key_value *pair = self->buckets[i];
+        sf_key_value *p_last = nullptr;
         self->buckets[i] = nullptr;
 
         while (pair) {
-            if (pairs)
-                pairs->next = pair;
+            if (!pairs)
+                pairs = pair;
+            if (p_last)
+                p_last->next = pair;
 
-            pairs = pair;
+            p_last = pair;
             pair = pair->next;
         }
+        if (p_last) p_last->next = nullptr;
     }
 
-    sf_key_value **new_buffer = sf_realloc(self->buckets, new_bucket_count);
+    sf_key_value **new_buffer = sf_realloc(self->buckets, new_bucket_count * sizeof(sf_key_value *));
     self->bucket_count = new_bucket_count;
     self->buckets = new_buffer;
 
     while (pairs) {
+        sf_key_value *next = pairs->next;
         const uint32_t hash = sf_fnv1a(pairs->key.c_str, pairs->key.len, SEED) & self->bucket_count - 1;
         self->buckets[hash] = sf_push_kv(self->buckets[hash], pairs);
+        pairs = next;
     }
 }
 
@@ -137,6 +143,8 @@ void sf_map_remove(sf_map *self, const sf_str key) {
         if (sf_str_eq(key, seek->key)) {
             if (seek_p)
                 seek_p->next = seek->next;
+            sf_str_free(seek->key);
+            free((void *)seek->value.pointer);
             free(seek);
             break;
         }
@@ -206,7 +214,7 @@ void sf_vec_append(sf_vec *vec, const void *data, const uint64_t count) {
     const size_t new_size = vec->count + count + 7 & ~(uint64_t)7; // Round to nearest greater multiple of 8.
     if (new_size > vec->slots || !vec->data) {
         vec->slots = new_size;
-        vec->data = vec->data ? sf_realloc(vec->data, new_size) : sf_calloc(1, new_size);
+        vec->data = vec->data ? sf_realloc(vec->data, new_size * vec->element_size) : sf_calloc(new_size, vec->element_size);
     }
 
     memcpy(vec->data + vec->count *  vec->element_size, data, count * vec->element_size);
@@ -222,7 +230,7 @@ void *sf_vec_pop(sf_vec *vec) {
     memcpy(new_data, vec->data + vec->count * vec->element_size, vec->element_size);
 
     if (vec->slots > SF_VEC_INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
-        vec->data = sf_realloc(vec->data, vec->slots /= 2);
+        vec->data = sf_realloc(vec->data, (vec->slots /= 2) * vec->element_size);
 
     vec->top = vec->data + vec->count;
     return new_data;
@@ -232,12 +240,12 @@ void sf_vec_insert(sf_vec *vec, const uint64_t index, const void *data) {
     assert(index <= vec->count && "Index out of bounds of vec.");
     if (vec->count == vec->slots) // Vector is full, double size.
         vec->data = sf_realloc(vec->data, (vec->slots *= 2) * vec->element_size);
-    vec->count++;
 
-    if (index == vec->count - 1) {
+    if (index == vec->count) {
         sf_vec_push(vec, data);
         return;
     }
+    vec->count++;
 
     memcpy(vec->data + (index + 1) * vec->element_size, vec->data + index * vec->element_size, vec->element_size * (vec->count - index - 1));
     memcpy(vec->data + index * vec->element_size, data, vec->element_size);
@@ -259,7 +267,7 @@ void sf_vec_remove(sf_vec *vec, const uint64_t index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     vec->count--;
     if (vec->count - index > 0)
-        memcpy(vec->data + index * vec->element_size, vec->data + (index + 1) * vec->element_size, vec->count - index);
+        memcpy(vec->data + index * vec->element_size, vec->data + (index + 1) * vec->element_size, (vec->count - index) * vec->element_size);
     if (vec->slots > SF_VEC_INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
         vec->data = sf_realloc(vec->data, vec->slots /= 2);
     vec->top = vec->data + vec->count;
