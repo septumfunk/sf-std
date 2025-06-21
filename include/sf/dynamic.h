@@ -29,12 +29,24 @@ static inline void *sf_realloc(void *buffer, const size_t new_size) {
         exit(EXIT_FAILURE);
     return buf;
 }
+/// Allocates memory and copies the value from another buffer in one step.
+static inline void *sf_memdup(const void *src, const size_t size) {
+    void *buf = sf_calloc(1, size);
+    memcpy(buf, src, size);
+    return buf;
+}
 
 #define SF_MAP_DEFAULT_BUCKETS 8
 
+/// A key that can either be a buffer of specified size or a string.
+typedef struct {
+    uint8_t *buffer;
+    size_t size;
+} sf_map_key;
+
 /// A key/value pair that contains size information and a possible reference to a chain of pairs.
 typedef struct sf_key_value {
-    const sf_str key; /// The key which this pair is indexed by.
+    const sf_map_key key; /// The key which this pair is indexed by.
     const struct {
         const void *const pointer; /// A read only pointer to the data on the heap.
         const size_t size; /// The size of the memory block pointed to.
@@ -54,35 +66,27 @@ typedef struct {
 [[nodiscard("sf_map leaked")]]
 EXPORT sf_map sf_map_new(void);
 /// Delete and clean up after a map and all of its pairs.
-EXPORT void sf_map_delete(sf_map *self);
+EXPORT void sf_map_delete(sf_map *map);
 /// Clear a map's pairs and reset it to its default state `SF_MAP_DEFAULT_BUCKETS 8`
-EXPORT void sf_map_clear(sf_map *self);
+EXPORT void sf_map_clear(sf_map *map);
 /// Insert a key/value pair into the map. The value's size is specified by the `size` parameter.
-/// It's recommended to use the convenience macro, `sf_map_insert`.
-EXPORT void sf_map_insert_raw(sf_map *self, sf_str key, const void *value, size_t size);
-#define sf_map_insert(self, key, value) sf_map_insert_raw(self, key, value, sizeof(*value))
-/// C-String alternative to sf_map_insert_raw.
-/// It's recommended to use the convenience macro, `sf_map_cinsert`.
-static inline void _sf_map_cinsert(sf_map *self, const char *key, const void *value, const size_t size) {
-    sf_map_insert_raw(self, sf_lit(key), value, size);
-}
-#define sf_map_cinsert(self, key, value) _sf_map_cinsert(self, key, value, sizeof(*value))
+/// It's recommended to use the convenience macro, `sf_map_sinsert` if your map uses strings as a key.
+EXPORT void sf_map_insert(sf_map *map, sf_map_key key, const void *value, size_t size);
+#define sf_map_sinsert(map, key_str, value) sf_map_insert(map, (sf_map_key){(uint8_t *)key_str.c_str, key_str.len}, value, sizeof(*value))
 /// Get a value from a map by its key.
-/// It's recommended to use the convenience macro, `sf_map_get`.
-EXPORT const void *_sf_map_get(const sf_map *self, sf_str key);
-#define sf_map_get(self, type, key) (*(type *)_sf_map_get(self, key))
-/// C-String alternative to _sf_map_get.
-/// It's recommended to use the convenience macro, `sf_map_cget`.
-static inline const void *_sf_map_cget(const sf_map *self, const char *key) { return _sf_map_get(self, sf_lit(key)); }
-#define sf_map_cget(self, type, key) (*(type *)_sf_map_cget(self, key))
+/// It's recommended to use the convenience macro, `sf_map_get` if your map uses strings as a key.
+EXPORT const void *sf_map_get(const sf_map *map, sf_map_key key);
+#define sf_map_sget(map, type, key_str) (*(type *)sf_map_get(map, (sf_map_key){(uint8_t *)key_str.c_str, key_str.len}))
 /// Check if a key has a corresponding value within the map.
-EXPORT bool sf_map_exists(const sf_map *self, sf_str key);
-static inline bool sf_map_cexists(const sf_map *self, const char *key) { return sf_map_exists(self, sf_lit(key)); }
+/// It's recommended to use the convenience macro, `sf_map_sexists` if your map uses strings as a key.
+EXPORT bool sf_map_exists(const sf_map *map, sf_map_key key);
+#define sf_map_sexists(map, key_str) sf_map_exists(map, (sf_map_key){(uint8_t *)key_str.c_str, key_str.len})
 /// Remove and free a value from a map by its key.
-EXPORT void sf_map_remove(sf_map *self, sf_str key);
-static inline void sf_map_cremove(sf_map *self, const char *key) { sf_map_remove(self, sf_lit(key)); }
+/// It's recommended to use the convenience macro, `sf_map_sremove` if your map uses strings as a key.
+EXPORT void sf_map_remove(sf_map *map, sf_map_key key);
+#define sf_map_sremove(map, key_str) sf_map_remove(map, (sf_map_key){(uint8_t *)key_str.c_str, key_str.len})
 /// Iterate over a map and call a custom handler function on each key/value pair.
-EXPORT void sf_map_foreach(const sf_map *self, void (*func)(void *ud, sf_key_value *pair), void *ud);
+EXPORT void sf_map_foreach(const sf_map *map, void (*func)(void *ud, sf_key_value *pair), void *ud);
 
 #define SF_VEC_INITIAL_SIZE 4
 
@@ -148,6 +152,9 @@ EXPORT sf_buffer sf_buffer_fixed(size_t size);
 /// Allocate a buffer that grows as you insert bytes.
 [[nodiscard("sf_buffer leaked")]]
 EXPORT sf_buffer sf_buffer_grow();
+/// Wrap an existing buffer with an sf_buffer.
+[[nodiscard("sf_buffer leaked")]]
+EXPORT sf_buffer sf_buffer_own(uint8_t *existing, size_t size);
 /// Insert a value into a buffer.
 [[nodiscard(SF_RESULT_LEAKED)]]
 EXPORT sf_result sf_buffer_insert(sf_buffer *buffer, const void *const ptr, size_t size);

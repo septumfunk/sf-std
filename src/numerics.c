@@ -1,5 +1,7 @@
 #include "sf/numerics.h"
 
+#include <assert.h>
+
 sf_str sf_transform_str(const sf_transform transform) {
     const sf_str pos_str = sf_vec3_str(transform.position);
     const sf_str rot_str = sf_vec3_str(transform.rotation);
@@ -10,6 +12,16 @@ sf_str sf_transform_str(const sf_transform transform) {
     sf_str_free(rot_str);
     sf_str_free(sca_str);
     return tsf_str;
+}
+
+uint32_t sf_fnv1a(const void *data, size_t size) {
+    const unsigned char *head = data;
+    uint32_t hash = SF_FNV1A_SEED;
+    while (size--) {
+        const auto cc = *head++;
+        hash = (cc ^ hash) * SF_FNV1A_PRIME;
+    }
+    return hash;
 }
 
 // static bool is_rand_initialized = false;

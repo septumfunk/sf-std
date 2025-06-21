@@ -5,22 +5,9 @@
 #include "sf/dynamic.h"
 #include "sf/numerics.h"
 
-#define PRIME 0x01000193
-#define SEED 0x811C9DC5
-
 sf_key_value *sf_push_kv(sf_key_value *list, sf_key_value *new) {
     new->next = list;
     return new;
-}
-
-static uint32_t sf_fnv1a(const void *data, size_t size, uint32_t hash) {
-    assert(data);
-    const unsigned char *head = data;
-    while (size--) {
-        const auto cc = *head++;
-        hash = (cc ^ hash) * PRIME;
-    }
-    return hash;
 }
 
 sf_map sf_map_new(void) {
@@ -31,41 +18,41 @@ sf_map sf_map_new(void) {
     };
 }
 
-void sf_map_delete(sf_map *self) {
-    sf_map_clear(self);
-    free(self->buckets);
+void sf_map_delete(sf_map *map) {
+    sf_map_clear(map);
+    free(map->buckets);
 }
 
-void sf_map_clear(sf_map *self) {
-    for (uint64_t i = 0; i < self->bucket_count; ++i) {
-        const sf_key_value *pair = self->buckets[i];
-        self->buckets[i] = nullptr;
+void sf_map_clear(sf_map *map) {
+    for (uint64_t i = 0; i < map->bucket_count; ++i) {
+        const sf_key_value *pair = map->buckets[i];
+        map->buckets[i] = nullptr;
 
         while (pair) {
             const sf_key_value *next = pair->next;
-            sf_str_free(pair->key);
+            free(pair->key.buffer);
             free((void *)pair->value.pointer);
             pair = next;
         }
     }
 
-    if (self->bucket_count > SF_MAP_DEFAULT_BUCKETS) {
-        self->bucket_count = SF_MAP_DEFAULT_BUCKETS;
-        free(self->buckets);
-        self->buckets = sf_calloc(self->bucket_count, sizeof(sf_key_value *));
+    if (map->bucket_count > SF_MAP_DEFAULT_BUCKETS) {
+        map->bucket_count = SF_MAP_DEFAULT_BUCKETS;
+        free(map->buckets);
+        map->buckets = sf_calloc(map->bucket_count, sizeof(sf_key_value *));
     }
 }
 
-double sf_map_load(const sf_map *self, const uint64_t bucket_count) {
-    return (double)self->pair_count / (double)bucket_count;
+double sf_map_load(const sf_map *map, const uint64_t bucket_count) {
+    return (double)map->pair_count / (double)bucket_count;
 }
 
-void sf_map_rehash(sf_map *self, const uint64_t new_bucket_count) {
+void sf_map_rehash(sf_map *map, const uint64_t new_bucket_count) {
     sf_key_value *pairs = nullptr;
-    for (uint64_t i = 0; i < self->bucket_count; ++i) {
-        sf_key_value *pair = self->buckets[i];
+    for (uint64_t i = 0; i < map->bucket_count; ++i) {
+        sf_key_value *pair = map->buckets[i];
         sf_key_value *p_last = nullptr;
-        self->buckets[i] = nullptr;
+        map->buckets[i] = nullptr;
 
         while (pair) {
             if (!pairs)
@@ -79,50 +66,53 @@ void sf_map_rehash(sf_map *self, const uint64_t new_bucket_count) {
         if (p_last) p_last->next = nullptr;
     }
 
-    sf_key_value **new_buffer = sf_realloc(self->buckets, new_bucket_count * sizeof(sf_key_value *));
-    self->bucket_count = new_bucket_count;
-    self->buckets = new_buffer;
+    sf_key_value **new_buffer = sf_realloc(map->buckets, new_bucket_count * sizeof(sf_key_value *));
+    map->bucket_count = new_bucket_count;
+    map->buckets = new_buffer;
 
     while (pairs) {
         sf_key_value *next = pairs->next;
-        const uint32_t hash = sf_fnv1a(pairs->key.c_str, pairs->key.len, SEED) & self->bucket_count - 1;
-        self->buckets[hash] = sf_push_kv(self->buckets[hash], pairs);
+        const uint32_t hash = sf_fnv1a(pairs->key.buffer, pairs->key.size) & map->bucket_count - 1;
+        map->buckets[hash] = sf_push_kv(map->buckets[hash], pairs);
         pairs = next;
     }
 }
 
-void sf_map_insert_raw(sf_map *self, const sf_str key, const void *value, const size_t size) {
-    if (!self->buckets || !self->bucket_count) {
-        self->buckets = sf_calloc(SF_MAP_DEFAULT_BUCKETS, sizeof(sf_key_value *));
-        self->bucket_count = SF_MAP_DEFAULT_BUCKETS;
+void sf_map_insert(sf_map *map, const sf_map_key key, const void *value, const size_t size) {
+    if (!map->buckets || !map->bucket_count) {
+        map->buckets = sf_calloc(SF_MAP_DEFAULT_BUCKETS, sizeof(sf_key_value *));
+        map->bucket_count = SF_MAP_DEFAULT_BUCKETS;
     }
 
-    if (sf_map_exists(self, key))
-        sf_map_remove(self, key);
+    if (sf_map_exists(map, key))
+        sf_map_remove(map, key);
 
     void *value_copy = sf_malloc(size);
     memcpy(value_copy, value, size);
 
-    const uint32_t hash = sf_fnv1a(key.c_str, key.len, SEED) & self->bucket_count - 1;
+    const uint32_t hash = sf_fnv1a(key.buffer, key.size) & map->bucket_count - 1;
     sf_key_value *pair = sf_malloc(sizeof(sf_key_value));
     memcpy(pair, &(sf_key_value) {
-        .key = sf_str_dup(key),
+        .key = {
+            .buffer = sf_memdup(key.buffer, key.size),
+            .size = key.size,
+        },
         .value = {
             .pointer = value_copy,
             .size = size
         },
     }, sizeof(sf_key_value));
-    self->buckets[hash] = sf_push_kv(self->buckets[hash], pair);
-    self->pair_count++;
+    map->buckets[hash] = sf_push_kv(map->buckets[hash], pair);
+    map->pair_count++;
 }
 
-const void *_sf_map_get(const sf_map *self, const sf_str key) {
-    assert(self->buckets && "Map is not initialized.");
-    const uint32_t hash = sf_fnv1a(key.c_str, key.len, SEED) & self->bucket_count - 1;
+const void *sf_map_get(const sf_map *map, const sf_map_key key) {
+    assert(map->buckets && "Map is not initialized.");
+    const uint32_t hash = sf_fnv1a(key.buffer, key.size) & map->bucket_count - 1;
 
-    const sf_key_value *seek = self->buckets[hash];
+    const sf_key_value *seek = map->buckets[hash];
     while (seek) {
-        if (sf_str_eq(key, seek->key))
+        if (key.size == seek->key.size && memcmp(key.buffer, seek->key.buffer, key.size) == 0)
             break;
         seek = seek->next;
     }
@@ -134,16 +124,16 @@ const void *_sf_map_get(const sf_map *self, const sf_str key) {
     return seek->value.pointer;
 }
 
-void sf_map_remove(sf_map *self, const sf_str key) {
-    const uint32_t hash = sf_fnv1a(key.c_str, key.len, SEED) & self->bucket_count - 1;
+void sf_map_remove(sf_map *map, const sf_map_key key) {
+    const uint32_t hash = sf_fnv1a(key.buffer, key.size) & map->bucket_count - 1;
 
-    sf_key_value *seek = self->buckets[hash];
+    sf_key_value *seek = map->buckets[hash];
     sf_key_value *seek_p = nullptr;
     while (seek) {
-        if (sf_str_eq(key, seek->key)) {
+        if (key.size == seek->key.size && memcmp(key.buffer, seek->key.buffer, key.size) == 0) {
             if (seek_p)
                 seek_p->next = seek->next;
-            sf_str_free(seek->key);
+            free(seek->key.buffer);
             free((void *)seek->value.pointer);
             free(seek);
             break;
@@ -151,17 +141,17 @@ void sf_map_remove(sf_map *self, const sf_str key) {
         seek_p = seek;
         seek = seek->next;
     }
-    self->pair_count--;
+    map->pair_count--;
 }
 
-bool sf_map_exists(const sf_map *self, const sf_str key) {
-    if (self->bucket_count == 0)
+bool sf_map_exists(const sf_map *map, const sf_map_key key) {
+    if (map->bucket_count == 0)
         return false;
 
-    const uint32_t hash = sf_fnv1a(key.c_str, key.len, SEED) & self->bucket_count - 1;
-    const sf_key_value *seek = self->buckets[hash];
+    const uint32_t hash = sf_fnv1a(key.buffer, key.size) & map->bucket_count - 1;
+    const sf_key_value *seek = map->buckets[hash];
     while (seek) {
-        if (sf_str_eq(key, seek->key))
+        if (key.size == seek->key.size && memcmp(key.buffer, seek->key.buffer, key.size) == 0)
             break;
         seek = seek->next;
     }
@@ -169,9 +159,9 @@ bool sf_map_exists(const sf_map *self, const sf_str key) {
     return seek ? true : false;
 }
 
-void sf_map_foreach(const sf_map *self, void (*func)(void *ud, sf_key_value *pair), void *ud) {
-    for (uint64_t i = 0; i < self->bucket_count; ++i) {
-        sf_key_value *p = self->buckets[i];
+void sf_map_foreach(const sf_map *map, void (*func)(void *ud, sf_key_value *pair), void *ud) {
+    for (uint64_t i = 0; i < map->bucket_count; ++i) {
+        sf_key_value *p = map->buckets[i];
         while (p) {
             func(ud, p);
             p = p->next;
@@ -289,6 +279,15 @@ sf_buffer sf_buffer_grow() {
         .ptr = nullptr,
         .head = nullptr,
         .flags = SF_BUFFER_GROW | SF_BUFFER_EMPTY,
+    };
+}
+
+sf_buffer sf_buffer_own(uint8_t *existing, const size_t size) {
+    return (sf_buffer) {
+        .size = size,
+        .ptr = existing,
+        .head = existing,
+        .flags = 0,
     };
 }
 
