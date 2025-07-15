@@ -40,7 +40,7 @@ static inline void *sf_memdup(const void *src, const size_t size) {
 
 /// A key that can either be a buffer of specified size or a string.
 typedef struct {
-    uint8_t *buffer;
+    void *buffer;
     size_t size;
 } sf_map_key;
 
@@ -48,7 +48,7 @@ typedef struct {
 typedef struct sf_key_value {
     const sf_map_key key; /// The key which this pair is indexed by.
     const struct {
-        const void *const pointer; /// A read only pointer to the data on the heap.
+        void *pointer; /// A read only pointer to the data on the heap.
         const size_t size; /// The size of the memory block pointed to.
     } value; /// Contains information about the value contained by this pair.
 
@@ -74,8 +74,8 @@ EXPORT void sf_map_clear(sf_map *map);
 EXPORT void sf_map_insert(sf_map *map, sf_map_key key, const void *value, size_t size);
 #define sf_map_sinsert(map, key_str, value) sf_map_insert(map, (sf_map_key){(uint8_t *)key_str.c_str, key_str.len}, value, sizeof(*value))
 /// Get a value from a map by its key.
-/// It's recommended to use the convenience macro, `sf_map_get` if your map uses strings as a key.
-EXPORT const void *sf_map_get(const sf_map *map, sf_map_key key);
+/// It's recommended to use the convenience macro, `sf_map_sget` if your map uses strings as a key.
+EXPORT void *sf_map_get(const sf_map *map, sf_map_key key);
 #define sf_map_sget(map, type, key_str) (*(type *)sf_map_get(map, (sf_map_key){(uint8_t *)key_str.c_str, key_str.len}))
 /// Check if a key has a corresponding value within the map.
 /// It's recommended to use the convenience macro, `sf_map_sexists` if your map uses strings as a key.

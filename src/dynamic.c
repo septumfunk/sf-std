@@ -106,7 +106,7 @@ void sf_map_insert(sf_map *map, const sf_map_key key, const void *value, const s
     map->pair_count++;
 }
 
-const void *sf_map_get(const sf_map *map, const sf_map_key key) {
+void *sf_map_get(const sf_map *map, const sf_map_key key) {
     assert(map->buckets && "Map is not initialized.");
     const uint32_t hash = sf_fnv1a(key.buffer, key.size) & map->bucket_count - 1;
 
@@ -134,7 +134,7 @@ void sf_map_remove(sf_map *map, const sf_map_key key) {
             if (seek_p)
                 seek_p->next = seek->next;
             free(seek->key.buffer);
-            free((void *)seek->value.pointer);
+            free(seek->value.pointer);
             free(seek);
             break;
         }
