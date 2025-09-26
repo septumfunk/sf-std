@@ -6,7 +6,7 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 /***********************************
- * You should #define VEC_T as the desired template type,
+ * You should #define VEC_T as a value type,
  * #define VEC_NAME as the desired type name for the vec.
 ***********************************/
 
