@@ -7,7 +7,7 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 /***********************************
- * You should #define MAP_K & MAP_V as types,
+ * You should #define MAP_K & MAP_V as key/value types,
  * #define MAP_NAME as the desired type name for the map.
  * Optionally, #define:
  * - uint32_t (*HASH_FN)(const MAP_K)
