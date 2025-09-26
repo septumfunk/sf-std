@@ -8,7 +8,7 @@
       "program": "${workspaceRoot}/build/tests/${input:testName}.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceRoot}",
       "environment": [],
     }
   ],
