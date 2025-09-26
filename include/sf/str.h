@@ -10,10 +10,10 @@
 
 /// Bitfield of flags to define aspects about a `sf_str`
 typedef enum {
-    SF_STR_NONE  = (1 << 0),
-    SF_STR_EMPTY = (1 << 1),
-    SF_STR_CONST = (1 << 2),
-    SF_STR_LIT   = (1 << 3),
+    SF_STR_NONE  = (1u << 0),
+    SF_STR_EMPTY = (1u << 1),
+    SF_STR_CONST = (1u << 2),
+    SF_STR_LIT   = (1u << 3),
 } sf_str_flag;
 
 /// A simple string wrapper with length.
@@ -24,12 +24,12 @@ typedef struct {
 } sf_str;
 #define SF_STR_EMPTY (sf_str) { NULL, 0, SF_STR_EMPTY }
 
-#define sf_lit(literal) ((sf_str) { .c_str = (char *)literal, .len = sizeof(literal) - 1, .flags = SF_STR_CONST | SF_STR_LIT })
-#define sf_ref(cstr) ((sf_str) { .c_str = (char *)cstr, .len = strlen(cstr), .flags = SF_STR_CONST })
-#define sf_own(cstr) ((sf_str) { .c_str = (char *)cstr, .len = strlen(cstr), .flags = SF_STR_NONE })
+#define sf_lit(literal) ((sf_str) { .c_str = (char *)(literal), .len = sizeof(literal) - 1, .flags = SF_STR_CONST | SF_STR_LIT })
+#define sf_ref(cstr) ((sf_str) { .c_str = (char *)(cstr), .len = strlen(cstr), .flags = SF_STR_CONST })
+#define sf_own(cstr) ((sf_str) { .c_str = (char *)(cstr), .len = strlen(cstr), .flags = SF_STR_NONE })
 
-#define sf_islit(string) (string.flags & SF_STR_LIT)
-#define sf_isempty(string) (string.flags & SF_STR_EMPTY)
+#define sf_islit(string) ((string).flags & SF_STR_LIT)
+#define sf_isempty(string) ((string).flags & SF_STR_EMPTY)
 /// Create a new string with format specifiers.
 EXPORT sf_str sf_str_fmt(const char *format, ...);
 /// Allocate space for and join two strings together.

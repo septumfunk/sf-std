@@ -39,7 +39,10 @@ sf_result sf_buffer_insert(sf_buffer *buffer, const void *const ptr, const size_
         } else if (buffer->flags & SF_BUFFER_GROW) {
             const long long ofs = buffer->head - buffer->ptr;
             buffer->size += size - offset;
-            buffer->ptr = realloc(buffer->ptr, buffer->size);
+            void *p = realloc(buffer->ptr, buffer->size);
+            if (p == NULL)
+                return sf_err(sf_lit("realloc failure"));
+            buffer->ptr = p;
             buffer->head = buffer->ptr + ofs;
         } else return sf_err(sf_lit("Buffer is fixed size and head doesn't have space to write."));
     }
