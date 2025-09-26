@@ -29,7 +29,7 @@ sf_buffer sf_buffer_own(uint8_t *existing, const size_t size) {
 }
 
 sf_result sf_buffer_insert(sf_buffer *buffer, const void *const ptr, const size_t size) {
-    const uint64_t offset = (uint64_t)(buffer->ptr + buffer->size - buffer->head);
+    const size_t offset = (size_t)(buffer->ptr + buffer->size - buffer->head);
     if (offset < size) {
         if (buffer->flags & SF_BUFFER_EMPTY) {
             buffer->size = size;

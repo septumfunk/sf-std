@@ -17,7 +17,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 if (MSVC)
-    set(COMPILE_OPTIONS /W4 /WX /permissive- /sdl)
+    set(COMPILE_OPTIONS /W4 /WX /permissive- /sdl /wd4068)
 else()
     set(COMPILE_OPTIONS
         -Wall -Wextra -Werror
