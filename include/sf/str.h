@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "export.h"
+#include "sf/math.h"
 
 /// Bitfield of flags to define aspects about a `sf_str`
 typedef enum {
@@ -50,5 +51,8 @@ static inline void sf_str_free(sf_str string) {
         string.len = 0;
     }
 }
+
+/// Hash a string
+static inline uint32_t sf_str_hash(const sf_str string) { return sf_fnv1a(string.c_str, string.len); }
 
 #endif // STRINGS_H

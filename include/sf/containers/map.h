@@ -1,6 +1,3 @@
-#ifndef SF_MAP
-#define SF_MAP
-
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -68,8 +65,8 @@ BUCKET *FUNC(push_kv)(BUCKET *list, BUCKET *new) {
 
 /// A map that uses user defined types for keys/values.
 typedef struct {
-    uint64_t bucket_count; /// Expands to reduce conflicts as the map grows.
-    uint64_t pair_count; /// The amount of key/value pairs currently held within the map.
+    size_t bucket_count; /// Expands to reduce conflicts as the map grows.
+    size_t pair_count; /// The amount of key/value pairs currently held within the map.
     BUCKET **buckets;
 } MAP_NAME;
 
@@ -86,7 +83,7 @@ static void FUNC(clear)(MAP_NAME *map) {
     if (!map->buckets || !map->bucket_count)
         return;
 
-    for (uint64_t i = 0; i < map->bucket_count; ++i) {
+    for (size_t i = 0; i < map->bucket_count; ++i) {
         BUCKET *pair = map->buckets[i];
         map->buckets[i] = NULL;
 
@@ -112,15 +109,15 @@ static void FUNC(free)(MAP_NAME *map) {
     map->pair_count = 0;
 }
 /// Calculate the load of a map.
-static double FUNC(load)(const MAP_NAME *map, const uint64_t bucket_count) {
+static double FUNC(load)(const MAP_NAME *map, const size_t bucket_count) {
     return (double)map->pair_count / (double)bucket_count;
 }
 /// Rehash a map when the load gets too high.
-static void FUNC(rehash)(MAP_NAME *map, const uint64_t new_bucket_count) {
+static void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
     if (!map->buckets || !map->bucket_count)
         return;
     BUCKET *pairs = NULL;
-    for (uint64_t i = 0; i < map->bucket_count; ++i) {
+    for (size_t i = 0; i < map->bucket_count; ++i) {
         BUCKET *pair = map->buckets[i];
         BUCKET *p_last = NULL;
         map->buckets[i] = NULL;
@@ -219,7 +216,7 @@ static void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
 static void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP_K key, MAP_V value), void *ud) {
     if (!map->buckets || !map->bucket_count)
         return;
-    for (uint64_t i = 0; i < map->bucket_count; ++i) {
+    for (size_t i = 0; i < map->bucket_count; ++i) {
         BUCKET *p = map->buckets[i];
         while (p) {
             func(ud, p->key, p->value);
@@ -228,4 +225,8 @@ static void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP_K key,
     }
 }
 
-#endif // SF_MAP
+#undef MAP_NAME
+#undef MAP_K
+#undef MAP_V
+#undef HASH_FN
+#undef EQUAL_FN

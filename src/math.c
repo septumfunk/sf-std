@@ -2,18 +2,6 @@
 
 #include <assert.h>
 
-sf_str sf_transform_str(const sf_transform transform) {
-    const sf_str pos_str = sf_vec3_str(transform.position);
-    const sf_str rot_str = sf_vec3_str(transform.rotation);
-    const sf_str sca_str = sf_vec3_str(transform.scale);
-    const sf_str tsf_str = sf_str_fmt("XYZ %s ROT %s SCALE %s", pos_str.c_str, rot_str.c_str, sca_str.c_str);
-
-    sf_str_free(pos_str);
-    sf_str_free(rot_str);
-    sf_str_free(sca_str);
-    return tsf_str;
-}
-
 uint32_t sf_fnv1a(const void *data, size_t size) {
     const unsigned char *head = data;
     uint32_t hash = SF_FNV1A_SEED;

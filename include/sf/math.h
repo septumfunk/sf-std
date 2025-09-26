@@ -1,8 +1,7 @@
 #ifndef NUMERICS_H
 #define NUMERICS_H
 
-#include "str.h"
-
+#include <stdint.h>
 #define SF_FNV1A_PRIME 0x01000193
 #define SF_FNV1A_SEED 0x811C9DC5
 
@@ -34,10 +33,6 @@ static inline sf_vec2 sf_vec2_multv(const sf_vec2 first, const sf_vec2 factor) {
 static inline sf_vec2 sf_vec2_multf(const sf_vec2 first, const float factor) {
     return (sf_vec2){first.x * factor, first.y * factor};
 }
-/// Constructs a string representation of a vec2.
-static inline sf_str sf_vec2_str(const sf_vec2 vec2) {
-    return sf_str_fmt("{ %f, %f }", (double)vec2.x, (double)vec2.y);
-}
 
 /// A single point in 3d space.
 typedef struct {
@@ -59,10 +54,6 @@ static inline sf_vec3 sf_vec3_multv(const sf_vec3 first, const sf_vec3 factor) {
 static inline sf_vec3 sf_vec3_multf(const sf_vec3 first, const float factor) {
     return (sf_vec3){first.x * factor, first.y * factor, first.z * factor};
 }
-/// String representation of a vec3.
-static inline sf_str sf_vec3_str(const sf_vec3 vec3) {
-    return sf_str_fmt("{ %f, %f, %f }", (double)vec3.x, (double)vec3.y, (double)vec3.z);
-}
 
 /// A representation of a transformation in 3d space.
 typedef struct sf_transform {
@@ -73,8 +64,6 @@ typedef struct sf_transform {
     struct sf_transform *parent;
 } sf_transform;
 #define SF_TRANSFORM_IDENTITY ((sf_transform){{0, 0, 0}, {0, 0, 0}, {1, 1, 1}, NULL})
-/// String representation of a transform.
-EXPORT sf_str sf_transform_str(sf_transform transform);
 
 /// Hash a buffer of `size` bytes with the fnv1a algorithm.
 uint32_t sf_fnv1a(const void *data, size_t size);

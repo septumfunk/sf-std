@@ -1,6 +1,3 @@
-#ifndef SF_VEC_H
-#define SF_VEC_H
-
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,8 +29,8 @@
 /// and the size of the vec may not always be equal to the amount of
 /// elements in it.
 typedef struct {
-    uint64_t slots; /// The amount of currently available slots.
-    uint64_t count; /// The amount of currently used slots.
+    size_t slots; /// The amount of currently available slots.
+    size_t count; /// The amount of currently used slots.
     VEC_T *data;
     VEC_T *top;
 } VEC_NAME;
@@ -85,7 +82,7 @@ static VEC_T FUNC(pop)(VEC_NAME *vec) {
     return data;
 }
 /// Insert an element at a specified index.
-static void FUNC(insert)(VEC_NAME *vec, const uint64_t index, const VEC_T value) {
+static void FUNC(insert)(VEC_NAME *vec, const size_t index, const VEC_T value) {
     assert(index <= vec->count && "Index out of bounds of vec.");
     if (index > vec->count)
         return;
@@ -104,21 +101,21 @@ static void FUNC(insert)(VEC_NAME *vec, const uint64_t index, const VEC_T value)
     vec->top = vec->data + vec->count;
 }
 /// Set the value at a specified index.
-static void FUNC(set)(const VEC_NAME *vec, const uint64_t index, const void *data) {
+static void FUNC(set)(const VEC_NAME *vec, const size_t index, const void *data) {
     assert(index < vec->count && "Index out of bounds of vec.");
     if (index >= vec->count)
         return;
     memcpy(vec->data + index, data, sizeof(VEC_T));
 }
 /// Get the value at a specified index.
-static VEC_T FUNC(get)(const VEC_NAME *vec, const uint64_t index) {
+static VEC_T FUNC(get)(const VEC_NAME *vec, const size_t index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     if (index >= vec->count)
         return (VEC_T){0};
     return *(vec->data + index);
 }
 /// Delete the value at the specified index.
-static void FUNC(delete)(VEC_NAME *vec, const uint64_t index) {
+static void FUNC(delete)(VEC_NAME *vec, const size_t index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     vec->count--;
     if (vec->count - index > 0)
@@ -128,4 +125,5 @@ static void FUNC(delete)(VEC_NAME *vec, const uint64_t index) {
     vec->top = vec->data + vec->count;
 }
 
-#endif // SF_VEC
+#undef VEC_NAME
+#undef VEC_T
