@@ -36,7 +36,7 @@ if (WIN32)
     endif()
 endif()
 
-# Boost CTest
+# CTest
 enable_testing()
 file(GLOB TEST_SRCS tests/*.c)
 foreach(TEST_SRC ${TEST_SRCS})
