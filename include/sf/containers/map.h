@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #pragma GCC diagnostic ignored "-Wunused-function"
 
@@ -44,7 +45,7 @@ static inline uint32_t FUNC(hash)(const MAP_K key) {
     size_t size = sizeof(MAP_K);
     uint32_t hash = SF_FNV1A_SEED;
     while (size--) {
-        const auto cc = *head++;
+        const unsigned char cc = *head++;
         hash = (cc ^ hash) * SF_FNV1A_PRIME;
     }
     return hash;
@@ -73,8 +74,7 @@ typedef struct {
 } MAP_NAME;
 
 /// Creates the map with the specified type and name.
-[[nodiscard("Map is leaked!")]]
-static MAP_NAME FUNC(new)() {
+static MAP_NAME FUNC(new)(void) {
     return (MAP_NAME) {
         .bucket_count = DEFAULT_BUCKETS,
         .pair_count = 0,
@@ -88,7 +88,7 @@ static void FUNC(clear)(MAP_NAME *map) {
 
     for (uint64_t i = 0; i < map->bucket_count; ++i) {
         BUCKET *pair = map->buckets[i];
-        map->buckets[i] = nullptr;
+        map->buckets[i] = NULL;
 
         while (pair) {
             BUCKET *next = pair->next;
@@ -107,7 +107,7 @@ static void FUNC(clear)(MAP_NAME *map) {
 static void FUNC(free)(MAP_NAME *map) {
     FUNC(clear)(map);
     free(map->buckets);
-    map->buckets = nullptr;
+    map->buckets = NULL;
     map->bucket_count = 0;
     map->pair_count = 0;
 }
@@ -119,11 +119,11 @@ static double FUNC(load)(const MAP_NAME *map, const uint64_t bucket_count) {
 static void FUNC(rehash)(MAP_NAME *map, const uint64_t new_bucket_count) {
     if (!map->buckets || !map->bucket_count)
         return;
-    BUCKET *pairs = nullptr;
+    BUCKET *pairs = NULL;
     for (uint64_t i = 0; i < map->bucket_count; ++i) {
         BUCKET *pair = map->buckets[i];
-        BUCKET *p_last = nullptr;
-        map->buckets[i] = nullptr;
+        BUCKET *p_last = NULL;
+        map->buckets[i] = NULL;
 
         while (pair) {
             if (!pairs)
@@ -134,7 +134,7 @@ static void FUNC(rehash)(MAP_NAME *map, const uint64_t new_bucket_count) {
             p_last = pair;
             pair = pair->next;
         }
-        if (p_last) p_last->next = nullptr;
+        if (p_last) p_last->next = NULL;
     }
 
     BUCKET **new_buffer = realloc(map->buckets, new_bucket_count * sizeof(BUCKET *));
@@ -181,7 +181,7 @@ static void FUNC(delete)(MAP_NAME *map, MAP_K key) {
 
     const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;
     BUCKET *seek = map->buckets[hash];
-    BUCKET *seek_p = nullptr;
+    BUCKET *seek_p = NULL;
     while (seek) {
         #ifndef EQUAL_FN
         if (key == seek->key) {
@@ -202,7 +202,7 @@ static void FUNC(delete)(MAP_NAME *map, MAP_K key) {
 static void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
     if (!map->buckets || !map->bucket_count)
         return;
-    if (FUNC(get)(map, key, nullptr))
+    if (FUNC(get)(map, key, NULL))
         FUNC(delete)(map, key);
 
     const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;
@@ -210,7 +210,7 @@ static void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
     memcpy(pair, &(BUCKET) {
         key,
         value,
-        nullptr
+        NULL
     }, sizeof(BUCKET));
     map->buckets[hash] = FUNC(push_kv)(map->buckets[hash], pair);
     map->pair_count++;

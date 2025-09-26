@@ -7,7 +7,7 @@ sf_str sf_str_fmt(const char *format, ...) {
 
     va_start(arglist, format);
     const unsigned long long size =
-        (unsigned long long)vsnprintf(nullptr, 0, format, arglist);
+        (unsigned long long)vsnprintf(NULL, 0, format, arglist);
     va_end(arglist);
 
     char *fmt = calloc(1, size + 1);

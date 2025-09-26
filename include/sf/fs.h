@@ -7,6 +7,6 @@
 EXPORT long sf_file_size(sf_str path);
 #define sf_file_exists(path) (sf_file_size(path) >= 0)
 /// Load a file into a byte buffer. Returns an error result on failure.
-[[nodiscard]] EXPORT sf_result sf_load_file(uint8_t *out, sf_str path);
+EXPORT sf_result sf_load_file(uint8_t *out, sf_str path);
 
 #endif // FILES_H

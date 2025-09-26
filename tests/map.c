@@ -5,7 +5,7 @@
 #define MAP_V int
 #include "sf/containers/map.h"
 
-int main() {
+int main(void) {
     sf_str_map map = sf_str_map_new();
 
     int a;

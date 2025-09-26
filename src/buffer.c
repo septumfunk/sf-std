@@ -10,11 +10,11 @@ sf_buffer sf_buffer_fixed(const size_t size) {
     };
 }
 
-sf_buffer sf_buffer_grow() {
+sf_buffer sf_buffer_grow(void) {
     return (sf_buffer) {
         .size = 0,
-        .ptr = nullptr,
-        .head = nullptr,
+        .ptr = NULL,
+        .head = NULL,
         .flags = SF_BUFFER_GROW | SF_BUFFER_EMPTY,
     };
 }
@@ -62,7 +62,7 @@ void sf_buffer_seek(sf_buffer *buffer, const sf_buffer_handle handle, const int6
 
 void sf_buffer_clear(sf_buffer *buffer) {
     free(buffer->ptr);
-    buffer->ptr = buffer->head = nullptr;
+    buffer->ptr = buffer->head = NULL;
     buffer->size = 0;
     buffer->flags |= SF_BUFFER_EMPTY;
 }

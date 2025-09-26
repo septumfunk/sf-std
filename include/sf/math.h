@@ -35,7 +35,6 @@ static inline sf_vec2 sf_vec2_multf(const sf_vec2 first, const float factor) {
     return (sf_vec2){first.x * factor, first.y * factor};
 }
 /// Constructs a string representation of a vec2.
-[[nodiscard(SF_STR_LEAKED)]]
 static inline sf_str sf_vec2_str(const sf_vec2 vec2) {
     return sf_str_fmt("{ %f, %f }", (double)vec2.x, (double)vec2.y);
 }
@@ -61,7 +60,6 @@ static inline sf_vec3 sf_vec3_multf(const sf_vec3 first, const float factor) {
     return (sf_vec3){first.x * factor, first.y * factor, first.z * factor};
 }
 /// String representation of a vec3.
-[[nodiscard(SF_STR_LEAKED)]]
 static inline sf_str sf_vec3_str(const sf_vec3 vec3) {
     return sf_str_fmt("{ %f, %f, %f }", (double)vec3.x, (double)vec3.y, (double)vec3.z);
 }
@@ -74,9 +72,8 @@ typedef struct sf_transform {
 
     struct sf_transform *parent;
 } sf_transform;
-#define SF_TRANSFORM_IDENTITY ((sf_transform){{0, 0, 0}, {0, 0, 0}, {1, 1, 1}, nullptr})
+#define SF_TRANSFORM_IDENTITY ((sf_transform){{0, 0, 0}, {0, 0, 0}, {1, 1, 1}, NULL})
 /// String representation of a transform.
-[[nodiscard(SF_STR_LEAKED)]]
 EXPORT sf_str sf_transform_str(sf_transform transform);
 
 /// Hash a buffer of `size` bytes with the fnv1a algorithm.

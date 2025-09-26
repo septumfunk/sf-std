@@ -40,13 +40,12 @@ typedef struct {
 
 /// Create a new vec.
 /// Note that vecs are lazily allocated.
-[[nodiscard("Vec is leaked!")]]
-static VEC_NAME FUNC(new)() {
+static VEC_NAME FUNC(new)(void) {
     return (VEC_NAME) {
         .slots = 0,
         .count = 0,
-        .data = nullptr,
-        .top = nullptr,
+        .data = NULL,
+        .top = NULL,
     };
 }
 /// Clean up after a vec's resources.
@@ -54,7 +53,7 @@ static void FUNC(free)(VEC_NAME *vec) {
     free(vec->data);
     vec->slots = 0;
     vec->count = 0;
-    vec->data = nullptr;
+    vec->data = NULL;
 }
 /// Push an element to the end of a vec.
 static void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
@@ -75,7 +74,7 @@ static void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
 static VEC_T FUNC(pop)(VEC_NAME *vec) {
     assert(vec->count > 0 && "Vec is empty.");
     if (vec->count == 0)
-        return (VEC_T){};
+        return (VEC_T){0};
 
     vec->count--;
     VEC_T data = *(vec->data + vec->count);
@@ -115,7 +114,7 @@ static void FUNC(set)(const VEC_NAME *vec, const uint64_t index, const void *dat
 static VEC_T FUNC(get)(const VEC_NAME *vec, const uint64_t index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     if (index >= vec->count)
-        return (VEC_T){};
+        return (VEC_T){0};
     return *(vec->data + index);
 }
 /// Delete the value at the specified index.
