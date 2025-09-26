@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "sf/str.h"
-#include "sf/dynamic.h"
 
 sf_str sf_str_fmt(const char *format, ...) {
     va_list arglist;
@@ -11,7 +10,7 @@ sf_str sf_str_fmt(const char *format, ...) {
         (unsigned long long)vsnprintf(nullptr, 0, format, arglist);
     va_end(arglist);
 
-    char *fmt = sf_calloc(1, size + 1);
+    char *fmt = calloc(1, size + 1);
     va_start(arglist, format);
     vsnprintf(fmt, size + 1, format, arglist);
     va_end(arglist);
@@ -26,7 +25,7 @@ sf_str sf_str_fmt(const char *format, ...) {
 sf_str sf_str_join(const sf_str str1, const sf_str str2) {
     const size_t s = str1.len + str2.len;
     const sf_str new_str = {
-        .c_str = sf_malloc(s + 1),
+        .c_str = malloc(s + 1),
         .len = s,
     };
     memcpy(new_str.c_str, str1.c_str, str1.len);
@@ -37,7 +36,7 @@ sf_str sf_str_join(const sf_str str1, const sf_str str2) {
 }
 
 sf_str sf_str_dup(const sf_str string) {
-    const sf_str new_str = { .c_str = sf_calloc(1, string.len + 1), .len = string.len };
+    const sf_str new_str = { .c_str = calloc(1, string.len + 1), .len = string.len };
     memcpy(new_str.c_str, string.c_str, string.len);
     return new_str;
 }

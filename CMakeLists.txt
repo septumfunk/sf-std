@@ -3,32 +3,49 @@ cmake_minimum_required(VERSION 3.28)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+set(LIBRARY_TYPE STATIC)
 
-set(SF_LIBRARY_TYPE STATIC)
-if (BUILD_SHARED_LIBS)
-    set(SF_LIBRARY_TYPE SHARED)
-endif()
-
-project(sf-std C)
-
-add_library(sf-std ${SF_LIBRARY_TYPE}
-    src/str.c
-    src/dynamic.c
-    src/numerics.c
+project(septek-core C)
+add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
+    src/buffer.c
     src/fs.c
+    src/math.c
+    src/str.c
 )
-target_include_directories(sf-std PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_compile_options(sf-std PRIVATE
-    -Wall -Werror -Wextra -pedantic -Wconversion
-    -Wsign-conversion -Wformat=2 -Wundef -Wno-format-nonliteral
-    -Wdouble-promotion -Wnull-dereference -Wstrict-overflow
-)
+add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+if (MSVC)
+    set(COMPILE_OPTIONS /W4 /WX /permissive- /sdl)
+else()
+    set(COMPILE_OPTIONS
+        -Wall -Wextra -Werror
+
+        -Wpedantic -Wconversion -Wuninitialized
+        -Wsign-conversion -Wnull-dereference
+    )
+endif()
+target_compile_options(${PROJECT_NAME} PUBLIC ${COMPILE_OPTIONS})
 
 if (WIN32)
     if (BUILD_SHARED_LIBS)
         set(CMAKE_SHARED_LIBRARY_PREFIX "")
-        target_compile_definitions(sf-std PUBLIC SF_DYNAMIC)
-        target_compile_definitions(sf-std PRIVATE SF_EXPORTS)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC LIB_DYNAMIC)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE LIB_EXPORTS)
     endif()
 endif()
+
+# Boost CTest
+enable_testing()
+file(GLOB TEST_SRCS tests/*.c)
+foreach(TEST_SRC ${TEST_SRCS})
+    get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_SRC})
+    target_link_libraries(${TEST_NAME} PRIVATE ${PROJECT_NAME})
+    target_compile_options(${TEST_NAME} PUBLIC ${COMPILE_OPTIONS})
+    set_target_properties(${TEST_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests
+    )
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+endforeach()

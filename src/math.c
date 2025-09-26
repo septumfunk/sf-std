@@ -1,4 +1,4 @@
-#include "sf/numerics.h"
+#include "sf/math.h"
 
 #include <assert.h>
 

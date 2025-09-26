@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Test",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/tests/${input:testName}.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testName",
+      "type": "promptString",
+      "description": "Test Name",
+      "default": "default",
+    }
+  ]
+}
