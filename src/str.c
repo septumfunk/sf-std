@@ -35,6 +35,19 @@ sf_str sf_str_join(const sf_str str1, const sf_str str2) {
     return new_str;
 }
 
+sf_str sf_str_append(const sf_str str1, const sf_str str2) {
+    const size_t s = str1.len + str2.len;
+    const sf_str new_str = {
+        .c_str = realloc(str1.c_str, s + 1),
+        .len = s,
+    };
+    memcpy(new_str.c_str, str1.c_str, str1.len);
+    memcpy(new_str.c_str + str1.len, str2.c_str, str2.len);
+    new_str.c_str[s] = '\0';
+
+    return new_str;
+}
+
 sf_str sf_str_dup(const sf_str string) {
     const sf_str new_str = { .c_str = calloc(1, string.len + 1), .len = string.len };
     memcpy(new_str.c_str, string.c_str, string.len);
