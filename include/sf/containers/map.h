@@ -230,3 +230,7 @@ static void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP_K key,
 #undef MAP_V
 #undef HASH_FN
 #undef EQUAL_FN
+
+#undef CAT
+#undef EXPAND_CAT
+#undef FUNC

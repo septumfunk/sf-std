@@ -132,3 +132,7 @@ static void FUNC(delete)(VEC_NAME *vec, const size_t index) {
 
 #undef VEC_NAME
 #undef VEC_T
+
+#undef CAT
+#undef EXPAND_CAT
+#undef FUNC

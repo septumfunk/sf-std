@@ -43,3 +43,7 @@ static inline EXPECTED_NAME FUNC(err)(EXPECTED_E err) { return (EXPECTED_NAME) {
 #undef EXPECTED_NAME
 #undef EXPECTED_O
 #undef EXPECTED_E
+
+#undef CAT
+#undef EXPAND_CAT
+#undef FUNC
