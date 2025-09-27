@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 set(LIBRARY_TYPE STATIC)
 
-project(septek-core C)
+project(sf-std C)
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
     src/buffer.c
     src/fs.c
