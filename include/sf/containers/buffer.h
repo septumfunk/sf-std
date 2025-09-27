@@ -2,8 +2,8 @@
 #define SF_BUFFER_H
 
 #include <stdint.h>
-#include "export.h"
 #include "sf/result.h"
+#include "export.h"
 
 /// Flags for determining a buffer's behavior.
 typedef enum {
