@@ -18,7 +18,7 @@
 
 #define CAT(a, b) a##b
 #define EXPAND_CAT(a, b) CAT(a, b)
-#define FUNC(name) EXPAND_CAT(MAP_NAME, _##name)
+#define FUNC(name) EXPAND_CAT(EXPECTED_NAME, _##name)
 
 /// An expected Ok or Err value, with user defined types.
 typedef struct {
