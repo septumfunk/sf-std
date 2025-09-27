@@ -3,16 +3,12 @@
 /***********************************
  * You should #define EXPECTED_O & EXPECTED_E as OK/Err types,
  * #define EXPECTED_NAME as the desired type name for the type.
+ * EXPECTED_O is optional.
 ***********************************/
 
 #ifndef EXPECTED_NAME
 #error "Please define a typename with EXPECTED_NAME"
 #define EXPECTED_NAME sf_expected
-#endif
-
-#ifndef EXPECTED_O
-#error "Please define an Ok type with EXPECTED_O"
-#define EXPECTED_O void *
 #endif
 
 #ifndef EXPECTED_E
@@ -28,13 +24,19 @@
 typedef struct {
     bool is_ok;
     union {
+        #ifdef EXPECTED_O
         EXPECTED_O ok;
+        #endif
         EXPECTED_E err;
     } value;
 } EXPECTED_NAME;
 
 /// Create an Ok variant of the expected.
+#ifdef EXPECTED_O
 static inline EXPECTED_NAME FUNC(ok)(EXPECTED_O ok) { return (EXPECTED_NAME) { .is_ok = true, .value.ok = ok, }; }
+#else
+static inline EXPECTED_NAME FUNC(ok)(void) { return (EXPECTED_NAME) { .is_ok = true }; }
+#endif
 /// Create an Err variant of the expected.
 static inline EXPECTED_NAME FUNC(err)(EXPECTED_E err) { return (EXPECTED_NAME) { .is_ok = false, .value.err = err, }; }
 
