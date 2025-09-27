@@ -67,6 +67,11 @@ static void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
 
     vec->top = vec->data + vec->count - 1;
 }
+/// Append elements to the end of a vec.
+static void FUNC(append)(VEC_NAME *vec, const VEC_T *values, size_t size) {
+    for (size_t i = 0; i < size; ++i)
+        FUNC(push)(vec, values[i]);
+}
 /// Pop an element from the end of a vec.
 static VEC_T FUNC(pop)(VEC_NAME *vec) {
     assert(vec->count > 0 && "Vec is empty.");
