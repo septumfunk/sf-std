@@ -65,7 +65,7 @@ static void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
     memcpy(vec->data + vec->count, &value, sizeof(VEC_T));
     vec->count++;
 
-    vec->top = vec->data + vec->count;
+    vec->top = vec->data + vec->count - 1;
 }
 /// Pop an element from the end of a vec.
 static VEC_T FUNC(pop)(VEC_NAME *vec) {
@@ -78,7 +78,7 @@ static VEC_T FUNC(pop)(VEC_NAME *vec) {
     if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
         vec->data = realloc(vec->data, (vec->slots /= 2) * sizeof(VEC_T));
 
-    vec->top = vec->data + vec->count;
+    vec->top = vec->data + vec->count - 1;
     return data;
 }
 /// Insert an element at a specified index.
@@ -98,7 +98,7 @@ static void FUNC(insert)(VEC_NAME *vec, const size_t index, const VEC_T value) {
     memcpy(vec->data + (index + 1), vec->data + index, sizeof(VEC_T) * (vec->count - index - 1));
     memcpy(vec->data + index, &value, sizeof(VEC_T));
 
-    vec->top = vec->data + vec->count;
+    vec->top = vec->data + vec->count - 1;
 }
 /// Set the value at a specified index.
 static void FUNC(set)(const VEC_NAME *vec, const size_t index, const void *data) {
@@ -122,7 +122,7 @@ static void FUNC(delete)(VEC_NAME *vec, const size_t index) {
         memcpy(vec->data + index, vec->data + (index + 1), (vec->count - index) * (sizeof(VEC_T)));
     if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
         vec->data = realloc(vec->data, vec->slots /= 2);
-    vec->top = vec->data + vec->count;
+    vec->top = vec->data + vec->count - 1;
 }
 
 #undef VEC_NAME
