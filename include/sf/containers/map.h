@@ -58,7 +58,7 @@ typedef struct BUCKET {
     struct BUCKET *next;
 } BUCKET;
 /// Helper function for pushing buckets.
-BUCKET *FUNC(push_kv)(BUCKET *list, BUCKET *new) {
+static inline BUCKET *FUNC(push_kv)(BUCKET *list, BUCKET *new) {
     new->next = list;
     return new;
 }
@@ -71,7 +71,7 @@ typedef struct {
 } MAP_NAME;
 
 /// Creates the map with the specified type and name.
-static MAP_NAME FUNC(new)(void) {
+static inline MAP_NAME FUNC(new)(void) {
     return (MAP_NAME) {
         .bucket_count = DEFAULT_BUCKETS,
         .pair_count = 0,
@@ -79,7 +79,7 @@ static MAP_NAME FUNC(new)(void) {
     };
 }
 /// Clear a map, resetting it to the default state.
-static void FUNC(clear)(MAP_NAME *map) {
+static inline void FUNC(clear)(MAP_NAME *map) {
     if (!map->buckets || !map->bucket_count)
         return;
 
@@ -101,7 +101,7 @@ static void FUNC(clear)(MAP_NAME *map) {
     }
 }
 /// Free all of a map's resources.
-static void FUNC(free)(MAP_NAME *map) {
+static inline void FUNC(free)(MAP_NAME *map) {
     FUNC(clear)(map);
     free(map->buckets);
     map->buckets = NULL;
@@ -109,11 +109,11 @@ static void FUNC(free)(MAP_NAME *map) {
     map->pair_count = 0;
 }
 /// Calculate the load of a map.
-static double FUNC(load)(const MAP_NAME *map, const size_t bucket_count) {
+static inline double FUNC(load)(const MAP_NAME *map, const size_t bucket_count) {
     return (double)map->pair_count / (double)bucket_count;
 }
 /// Rehash a map when the load gets too high.
-static void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
+static inline void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
     if (!map->buckets || !map->bucket_count)
         return;
     BUCKET *pairs = NULL;
@@ -147,7 +147,7 @@ static void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
 }
 /// Returns whether the key exists or not and writes to `out` on success.
 /// If `out` is null, simply return whether the key exists.
-static bool FUNC(get)(const MAP_NAME *map, MAP_K key, MAP_V *out) {
+static inline bool FUNC(get)(const MAP_NAME *map, MAP_K key, MAP_V *out) {
     if (!map->buckets || !map->bucket_count)
         return false;
     const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;
@@ -172,7 +172,7 @@ static bool FUNC(get)(const MAP_NAME *map, MAP_K key, MAP_V *out) {
     return true;
 }
 /// Delete a value from a map by its key.
-static void FUNC(delete)(MAP_NAME *map, MAP_K key) {
+static inline void FUNC(delete)(MAP_NAME *map, MAP_K key) {
     if (!map->buckets || !map->bucket_count)
         return;
 
@@ -196,7 +196,7 @@ static void FUNC(delete)(MAP_NAME *map, MAP_K key) {
     map->pair_count--;
 }
 /// Set the value at the requested key, overriding any existing value.
-static void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
+static inline void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
     if (!map->buckets || !map->bucket_count)
         return;
     if (FUNC(get)(map, key, NULL))
@@ -213,7 +213,7 @@ static void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
     map->pair_count++;
 }
 /// Loop over a map's key/value pairs and execute custom code with them.
-static void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP_K key, MAP_V value), void *ud) {
+static inline void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP_K key, MAP_V value), void *ud) {
     if (!map->buckets || !map->bucket_count)
         return;
     for (size_t i = 0; i < map->bucket_count; ++i) {
