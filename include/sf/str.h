@@ -35,7 +35,7 @@ EXPORT sf_str sf_str_fmt(const char *format, ...);
 /// Allocate space for and join two strings together.
 EXPORT sf_str sf_str_join(const sf_str str1, const sf_str str2);
 /// Reallocates and appends to a string. Do not call this on a literal.
-EXPORT sf_str sf_str_append(const sf_str str1, const sf_str str2);
+EXPORT void sf_str_append(sf_str *str1, const sf_str str2);
 /// Allocates and duplicates a new string from an existing one.
 EXPORT sf_str sf_str_dup(const sf_str string);
 /// Duplicate a c-string into a sf_str.
