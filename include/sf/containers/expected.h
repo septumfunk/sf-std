@@ -37,3 +37,7 @@ typedef struct {
 static inline EXPECTED_NAME FUNC(ok)(EXPECTED_O ok) { return (EXPECTED_NAME) { .is_ok = true, .value.ok = ok, }; }
 /// Create an Err variant of the expected.
 static inline EXPECTED_NAME FUNC(err)(EXPECTED_E err) { return (EXPECTED_NAME) { .is_ok = false, .value.err = err, }; }
+
+#undef EXPECTED_NAME
+#undef EXPECTED_O
+#undef EXPECTED_E
