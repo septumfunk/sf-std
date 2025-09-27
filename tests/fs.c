@@ -9,7 +9,7 @@ int main(void) {
 
     uint8_t *file = malloc((size_t)size);
     sf_result res = sf_load_file(file, sf_lit("CMakeLists.txt"));
-    assert(res.ok);
+    assert(res.is_ok);
 
     free(file);
 }

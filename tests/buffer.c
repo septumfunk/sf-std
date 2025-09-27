@@ -8,7 +8,7 @@ int main(void) {
 
     unsigned char bytes[1024] = { 4, 2, 0, 6, 9 };
     sf_result res = sf_buffer_insert(&buff, bytes, sizeof(bytes));
-    assert(res.ok);
+    assert(res.is_ok);
     sf_discard(res);
     assert(memcmp(buff.ptr, bytes, sizeof(bytes)) == 0);
 
@@ -18,7 +18,7 @@ int main(void) {
     buff = sf_buffer_fixed(512);
 
     res = sf_buffer_insert(&buff, bytes, sizeof(bytes));
-    assert(!res.ok);
+    assert(!res.is_ok);
     sf_discard(res);
 
     sf_buffer_clear(&buff);
@@ -27,7 +27,7 @@ int main(void) {
     buff = sf_buffer_grow();
 
     res = sf_buffer_insert(&buff, bytes, sizeof(bytes));
-    assert(res.ok);
+    assert(res.is_ok);
     sf_discard(res);
     assert(buff.size == sizeof(bytes));
 
