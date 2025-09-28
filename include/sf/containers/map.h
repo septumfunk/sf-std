@@ -15,15 +15,15 @@
 ***********************************/
 
 #ifndef MAP_NAME
-#error "Please define typename MAP_NAME"
+#error Undefined typename MAP_NAME
 #define MAP_NAME sf_map
 #endif
 #ifndef MAP_K
-#error "Please define type MAP_K"
+#error Undefined type MAP_K
 #define MAP_K void *
 #endif
 #ifndef MAP_V
-#error "Please define type MAP_V"
+#error Undefined type MAP_V
 #define MAP_V void *
 #endif
 

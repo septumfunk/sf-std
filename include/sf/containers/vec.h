@@ -11,11 +11,11 @@
 ***********************************/
 
 #ifndef VEC_NAME
-#error "Please define typename VEC_NAME"
+#error Undefined typename VEC_NAME
 #define VEC_NAME sf_vec
 #endif
 #ifndef VEC_T
-#error "Please define type VEC_T"
+#error Undefined type VEC_T
 #define VEC_T void *
 #endif
 
@@ -37,7 +37,7 @@ typedef struct {
 
 /// Create a new vec.
 /// Note that vecs are lazily allocated.
-static VEC_NAME FUNC(new)(void) {
+static inline VEC_NAME FUNC(new)(void) {
     return (VEC_NAME) {
         .slots = 0,
         .count = 0,
@@ -46,14 +46,14 @@ static VEC_NAME FUNC(new)(void) {
     };
 }
 /// Clean up after a vec's resources.
-static void FUNC(free)(VEC_NAME *vec) {
+static inline void FUNC(free)(VEC_NAME *vec) {
     free(vec->data);
     vec->slots = 0;
     vec->count = 0;
     vec->data = NULL;
 }
 /// Push an element to the end of a vec.
-static void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
+static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
     if (!vec->data || !vec->count || !vec->slots) {
         vec->data = calloc(INITIAL_SIZE, sizeof(VEC_T));
         vec->slots = INITIAL_SIZE;
@@ -68,12 +68,12 @@ static void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
     vec->top = vec->data + vec->count - 1;
 }
 /// Append elements to the end of a vec.
-static void FUNC(append)(VEC_NAME *vec, const VEC_T *values, size_t size) {
+static inline void FUNC(append)(VEC_NAME *vec, const VEC_T *values, size_t size) {
     for (size_t i = 0; i < size; ++i)
         FUNC(push)(vec, values[i]);
 }
 /// Pop an element from the end of a vec.
-static VEC_T FUNC(pop)(VEC_NAME *vec) {
+static inline VEC_T FUNC(pop)(VEC_NAME *vec) {
     assert(vec->count > 0 && "Vec is empty.");
     if (vec->count == 0)
         return (VEC_T){0};
@@ -87,7 +87,7 @@ static VEC_T FUNC(pop)(VEC_NAME *vec) {
     return data;
 }
 /// Insert an element at a specified index.
-static void FUNC(insert)(VEC_NAME *vec, const size_t index, const VEC_T value) {
+static inline void FUNC(insert)(VEC_NAME *vec, const size_t index, const VEC_T value) {
     assert(index <= vec->count && "Index out of bounds of vec.");
     if (index > vec->count)
         return;
@@ -106,21 +106,21 @@ static void FUNC(insert)(VEC_NAME *vec, const size_t index, const VEC_T value) {
     vec->top = vec->data + vec->count - 1;
 }
 /// Set the value at a specified index.
-static void FUNC(set)(const VEC_NAME *vec, const size_t index, const void *data) {
+static inline void FUNC(set)(const VEC_NAME *vec, const size_t index, const void *data) {
     assert(index < vec->count && "Index out of bounds of vec.");
     if (index >= vec->count)
         return;
     memcpy(vec->data + index, data, sizeof(VEC_T));
 }
 /// Get the value at a specified index.
-static VEC_T FUNC(get)(const VEC_NAME *vec, const size_t index) {
+static inline VEC_T FUNC(get)(const VEC_NAME *vec, const size_t index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     if (index >= vec->count)
         return (VEC_T){0};
     return *(vec->data + index);
 }
 /// Delete the value at the specified index.
-static void FUNC(delete)(VEC_NAME *vec, const size_t index) {
+static inline void FUNC(delete)(VEC_NAME *vec, const size_t index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     vec->count--;
     if (vec->count - index > 0)

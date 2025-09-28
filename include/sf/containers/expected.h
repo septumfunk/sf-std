@@ -7,12 +7,12 @@
 ***********************************/
 
 #ifndef EXPECTED_NAME
-#error "Please define a typename with EXPECTED_NAME"
+#error Undefined typename EXPECTED_NAME
 #define EXPECTED_NAME sf_expected
 #endif
 
 #ifndef EXPECTED_E
-#error "Please define an Err type with EXPECTED_E
+#error Undefined type EXPECTED_E
 #define EXPECTED_E void *
 #endif
 
