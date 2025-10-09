@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "sanitizers.h"
 
 #pragma GCC diagnostic ignored "-Wunused-function"
 
@@ -55,7 +56,9 @@ static inline void FUNC(free)(VEC_NAME *vec) {
 /// Push an element to the end of a vec.
 static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
     if (!vec->data || !vec->count || !vec->slots) {
+        __lsan_disable();
         vec->data = calloc(INITIAL_SIZE, sizeof(VEC_T));
+        __lsan_enable();
         vec->slots = INITIAL_SIZE;
     }
 
