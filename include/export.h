@@ -11,7 +11,7 @@
 #    else
 #        define EXPORT
 #    endif
-#elif
+#else
 #    define EXPORT
 #endif
 

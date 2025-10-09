@@ -1,6 +1,7 @@
 #ifndef NUMERICS_H
 #define NUMERICS_H
 
+#include <stddef.h>
 #include <stdint.h>
 #define SF_FNV1A_PRIME 0x01000193
 #define SF_FNV1A_SEED 0x811C9DC5
