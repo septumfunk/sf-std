@@ -37,16 +37,19 @@ if (WIN32)
 endif()
 
 # CTest
-enable_testing()
-file(GLOB TEST_SRCS tests/*.c)
-foreach(TEST_SRC ${TEST_SRCS})
-    get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
-    add_executable(${TEST_NAME} ${TEST_SRC})
-    target_link_libraries(${TEST_NAME} PRIVATE ${PROJECT_NAME})
-    target_compile_options(${TEST_NAME} PUBLIC ${COMPILE_OPTIONS})
-    set_target_properties(${TEST_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests
-    )
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
-    set_tests_properties(${TEST_NAME} PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endforeach()
+option(BUILD_TESTS "Build tests in tests/ folder." ON)
+if (BUILD_TESTS)
+    enable_testing()
+    file(GLOB TEST_SRCS tests/*.c)
+    foreach(TEST_SRC ${TEST_SRCS})
+        get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
+        add_executable(${TEST_NAME} ${TEST_SRC})
+        target_link_libraries(${TEST_NAME} PRIVATE ${PROJECT_NAME})
+        target_compile_options(${TEST_NAME} PUBLIC ${COMPILE_OPTIONS})
+        set_target_properties(${TEST_NAME} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests
+        )
+        add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+        set_tests_properties(${TEST_NAME} PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    endforeach()
+endif()
