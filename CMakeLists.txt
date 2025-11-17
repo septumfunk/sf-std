@@ -37,8 +37,7 @@ if (WIN32)
 endif()
 
 # CTest
-option(BUILD_TESTS "Build tests in tests/ folder." ON)
-if (BUILD_TESTS)
+if (PROJECT_IS_TOP_LEVEL)
     enable_testing()
     file(GLOB TEST_SRCS tests/*.c)
     foreach(TEST_SRC ${TEST_SRCS})
