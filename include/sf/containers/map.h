@@ -27,6 +27,10 @@
 #define MAP_V void *
 #endif
 
+#define EXPECTED_NAME EXPAND_CAT(MAP_NAME, _ex)
+#define EXPECTED_O MAP_V
+#include "sf/containers/expected.h"
+
 #define CAT(a, b) a##b
 #define EXPAND_CAT(a, b) CAT(a, b)
 #define FUNC(name) EXPAND_CAT(MAP_NAME, _##name)
@@ -145,11 +149,13 @@ static inline void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
         pairs = next;
     }
 }
+
+#define EX EXPAND_CAT(MAP_NAME, _ex)
 /// Returns whether the key exists or not and writes to `out` on success.
 /// If `out` is null, simply return whether the key exists.
-static inline bool FUNC(get)(const MAP_NAME *map, MAP_K key, MAP_V *out) {
+static inline EX FUNC(get)(const MAP_NAME *map, MAP_K key) {
     if (!map->buckets || !map->bucket_count)
-        return false;
+        return EXPAND_CAT(EX, _err)();
     const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;
 
     const BUCKET *seek = map->buckets[hash];
@@ -165,11 +171,9 @@ static inline bool FUNC(get)(const MAP_NAME *map, MAP_K key, MAP_V *out) {
     }
 
     if (!seek)
-        return false;
-    if (out)
-        memcpy(out, &seek->value, sizeof(MAP_V));
+        return EXPAND_CAT(EX, _err)();
 
-    return true;
+    return EXPAND_CAT(EX, _ok)(seek->value);
 }
 /// Delete a value from a map by its key.
 static inline void FUNC(delete)(MAP_NAME *map, MAP_K key) {
@@ -199,7 +203,7 @@ static inline void FUNC(delete)(MAP_NAME *map, MAP_K key) {
 static inline void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
     if (!map->buckets || !map->bucket_count)
         return;
-    if (FUNC(get)(map, key, NULL))
+    if (FUNC(get)(map, key).is_ok)
         FUNC(delete)(map, key);
 
     const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;

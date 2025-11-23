@@ -11,9 +11,11 @@
 #define EXPECTED_NAME sf_expected
 #endif
 
-#ifndef EXPECTED_E
-#error Undefined type EXPECTED_E
-#define EXPECTED_E void *
+#ifndef EXPECTED_O
+#   ifndef EXPECTED_E
+#       error Undefined type EXPECTED_E
+#       define EXPECTED_E void *
+#   endif
 #endif
 
 #define CAT(a, b) a##b
@@ -27,7 +29,9 @@ typedef struct {
         #ifdef EXPECTED_O
         EXPECTED_O ok;
         #endif
+        #ifdef EXPECTED_E
         EXPECTED_E err;
+        #endif
     } value;
 } EXPECTED_NAME;
 
@@ -38,7 +42,11 @@ static inline EXPECTED_NAME FUNC(ok)(EXPECTED_O ok) { return (EXPECTED_NAME) { .
 static inline EXPECTED_NAME FUNC(ok)(void) { return (EXPECTED_NAME) { .is_ok = true }; }
 #endif
 /// Create an Err variant of the expected.
+#ifdef EXPECTED_E
 static inline EXPECTED_NAME FUNC(err)(EXPECTED_E err) { return (EXPECTED_NAME) { .is_ok = false, .value.err = err, }; }
+#else
+static inline EXPECTED_NAME FUNC(err)(void) { return (EXPECTED_NAME) { .is_ok = false }; }
+#endif
 
 #undef EXPECTED_NAME
 #undef EXPECTED_O
