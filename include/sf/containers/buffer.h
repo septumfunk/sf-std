@@ -1,8 +1,8 @@
 #ifndef SF_BUFFER_H
 #define SF_BUFFER_H
 
+#include <stddef.h>
 #include <stdint.h>
-#include "sf/result.h"
 #include "export.h"
 
 /// Flags for determining a buffer's behavior.
@@ -26,14 +26,24 @@ typedef struct {
     uint8_t flags;
 } sf_buffer;
 
+typedef enum {
+    SF_BUFFER_FULL,
+    SF_BUFFER_OOB, // Out of bounds
+    SF_BUFFER_ALLOC_FAIL,
+} sf_buffer_err;
+
+#define EXPECTED_NAME sf_buffer_ex
+#define EXPECTED_E sf_buffer_err
+#include <sf/containers/expected.h>
+
 /// Allocate a fixed buffer at a specified size.
 EXPORT sf_buffer sf_buffer_fixed(size_t size);
 /// Allocate a buffer that grows as you insert bytes.
 EXPORT sf_buffer sf_buffer_grow(void);
 /// Wrap an existing buffer with an sf_buffer.
 EXPORT sf_buffer sf_buffer_own(uint8_t *existing, size_t size);
-/// Insert a value into a buffer.
-EXPORT sf_result sf_buffer_insert(sf_buffer *buffer, const void *const ptr, size_t size);
+/// Insert a value into a buffer. Can fail if there is not enough space.
+EXPORT sf_buffer_ex sf_buffer_insert(sf_buffer *buffer, const void *const ptr, size_t size);
 /// Insert a value into a buffer with automatic sizing.
 #define sf_buffer_autoins(buffer, value) sf_buffer_insert(buffer, value, sizeof(*(value)))
 /// Seek to a position in the buffer.
@@ -41,7 +51,7 @@ EXPORT void sf_buffer_seek(sf_buffer *buffer, sf_buffer_handle handle, int64_t o
 /// Free a buffer and/or revert it to an empty state.
 EXPORT void sf_buffer_clear(sf_buffer *buffer);
 /// Copies x bytes from the buffer head to the specified location.
-EXPORT sf_result sf_buffer_read(sf_buffer *buffer, void *dest, size_t bytes);
+EXPORT sf_buffer_ex sf_buffer_read(sf_buffer *buffer, void *dest, size_t bytes);
 /// Automatically read a value based on the type of the pointer.
 /// `dest` must be a pointer.
 #define sf_buffer_autoread(buffer, dest) sf_buffer_read(buffer, dest, sizeof(*(dest)))

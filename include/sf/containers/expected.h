@@ -11,13 +11,6 @@
 #define EXPECTED_NAME sf_expected
 #endif
 
-#ifndef EXPECTED_O
-#   ifndef EXPECTED_E
-#       error Undefined type EXPECTED_E
-#       define EXPECTED_E void *
-#   endif
-#endif
-
 #define CAT(a, b) a##b
 #define EXPAND_CAT(a, b) CAT(a, b)
 #define FUNC(name) EXPAND_CAT(EXPECTED_NAME, _##name)
@@ -25,6 +18,7 @@
 /// An expected Ok or Err value, with user defined types.
 typedef struct {
     bool is_ok;
+    #if defined(EXPECTED_O) || defined(EXPECTED_E)
     union {
         #ifdef EXPECTED_O
         EXPECTED_O ok;
@@ -33,6 +27,7 @@ typedef struct {
         EXPECTED_E err;
         #endif
     } value;
+    #endif
 } EXPECTED_NAME;
 
 /// Create an Ok variant of the expected.

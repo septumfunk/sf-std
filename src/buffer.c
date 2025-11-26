@@ -1,4 +1,7 @@
 #include "sf/containers/buffer.h"
+#include "sf/math.h"
+#include <stdlib.h>
+#include <string.h>
 
 sf_buffer sf_buffer_fixed(const size_t size) {
     uint8_t *dat = calloc(1, size);
@@ -28,7 +31,7 @@ sf_buffer sf_buffer_own(uint8_t *existing, const size_t size) {
     };
 }
 
-sf_result sf_buffer_insert(sf_buffer *buffer, const void *const ptr, const size_t size) {
+sf_buffer_ex sf_buffer_insert(sf_buffer *buffer, const void *const ptr, const size_t size) {
     const size_t offset = (size_t)(buffer->ptr + buffer->size - buffer->head);
     if (offset < size) {
         if (buffer->flags & SF_BUFFER_EMPTY) {
@@ -41,15 +44,15 @@ sf_result sf_buffer_insert(sf_buffer *buffer, const void *const ptr, const size_
             buffer->size += size - offset;
             void *p = realloc(buffer->ptr, buffer->size);
             if (p == NULL)
-                return sf_err(sf_lit("realloc failure"));
+                return sf_buffer_ex_err(SF_BUFFER_ALLOC_FAIL);
             buffer->ptr = p;
             buffer->head = buffer->ptr + ofs;
-        } else return sf_err(sf_lit("Buffer is fixed size and head doesn't have space to write."));
+        } else return sf_buffer_ex_err(SF_BUFFER_FULL);
     }
 
     memcpy(buffer->head, ptr, size);
     buffer->head += size;
-    return sf_ok();
+    return sf_buffer_ex_ok();
 }
 
 void sf_buffer_seek(sf_buffer *buffer, const sf_buffer_handle handle, const int64_t offset) {
@@ -70,11 +73,11 @@ void sf_buffer_clear(sf_buffer *buffer) {
     buffer->flags |= SF_BUFFER_EMPTY;
 }
 
-sf_result sf_buffer_read(sf_buffer *buffer, void *dest, const size_t bytes) {
+sf_buffer_ex sf_buffer_read(sf_buffer *buffer, void *dest, const size_t bytes) {
     if ((uint64_t)(buffer->ptr + buffer->size - buffer->head) < bytes)
-        return sf_err(sf_lit("Out of bounds read at buffer write head."));
+        return sf_buffer_ex_err(SF_BUFFER_OOB);
 
     memcpy(dest, buffer->head, bytes);
     buffer->head += bytes;
-    return sf_ok();
+    return sf_buffer_ex_ok();
 }
