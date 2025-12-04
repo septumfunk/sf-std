@@ -36,6 +36,7 @@ sf_fsb_ex sf_file_buffer(sf_str path) {
     if (!f)
         return sf_fsb_ex_err(SF_OPEN_FAILURE);
     sf_buffer out = sf_buffer_fixed(size);
+    sf_buffer_seek(&out, SF_BUFFER_END, 0);
 
     // Read into buffer
     if (fread(out.ptr, size, 1, f) < 0) {
