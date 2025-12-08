@@ -46,12 +46,30 @@ static inline VEC_NAME FUNC(new)(void) {
         .top = NULL,
     };
 }
+/// Allocate a new vec.
+/// Differs from new in that it explicitly allocates `count` elements.
+/// Initializes all elements to `def`.
+static inline VEC_NAME FUNC(alloc)(size_t count, VEC_T def) {
+    VEC_NAME v = (VEC_NAME) {
+        .slots = count,
+        .count = count,
+        .data = malloc(sizeof(VEC_T) * count),
+        .top = NULL,
+    };
+
+    for (size_t i = 0; i < count; ++i)
+        memcpy(v.data + i, &def, sizeof(VEC_T));
+    v.top = v.data + count - 1;
+
+    return v;
+}
 /// Clean up after a vec's resources.
 static inline void FUNC(free)(VEC_NAME *vec) {
     free(vec->data);
     vec->slots = 0;
     vec->count = 0;
     vec->data = NULL;
+    vec->top = NULL;
 }
 /// Push an element to the end of a vec.
 static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
