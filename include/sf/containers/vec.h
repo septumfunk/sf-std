@@ -9,6 +9,9 @@
 /***********************************
  * You should #define VEC_T as a value type,
  * #define VEC_NAME as the desired type name for the vec.
+ * Optionally, define
+ * - void (*CLEANUP_FN)(MAP_NAME *)
+ * - type SIZE_T
 ***********************************/
 
 #ifndef VEC_NAME
@@ -20,6 +23,10 @@
 #define VEC_T void *
 #endif
 
+#ifndef SIZE_T
+#define SIZE_T size_t
+#endif
+
 #define CAT(a, b) a##b
 #define EXPAND_CAT(a, b) CAT(a, b)
 #define FUNC(name) EXPAND_CAT(VEC_NAME, _##name)
@@ -29,9 +36,9 @@
 /// A generic dynamic vec. Be aware that data may move around the heap,
 /// and the size of the vec may not always be equal to the amount of
 /// elements in it.
-typedef struct {
-    size_t slots; /// The amount of currently available slots.
-    size_t count; /// The amount of currently used slots.
+typedef struct VEC_NAME {
+    SIZE_T slots; /// The amount of currently available slots.
+    SIZE_T count; /// The amount of currently used slots.
     VEC_T *data;
     VEC_T *top;
 } VEC_NAME;
@@ -49,7 +56,7 @@ static inline VEC_NAME FUNC(new)(void) {
 /// Allocate a new vec.
 /// Differs from new in that it explicitly allocates `count` elements.
 /// Initializes all elements to `def`.
-static inline VEC_NAME FUNC(alloc)(size_t count, VEC_T def) {
+static inline VEC_NAME FUNC(alloc)(SIZE_T count, VEC_T def) {
     VEC_NAME v = (VEC_NAME) {
         .slots = count,
         .count = count,
@@ -57,7 +64,7 @@ static inline VEC_NAME FUNC(alloc)(size_t count, VEC_T def) {
         .top = NULL,
     };
 
-    for (size_t i = 0; i < count; ++i)
+    for (SIZE_T i = 0; i < count; ++i)
         memcpy(v.data + i, &def, sizeof(VEC_T));
     v.top = v.data + count - 1;
 
@@ -65,6 +72,9 @@ static inline VEC_NAME FUNC(alloc)(size_t count, VEC_T def) {
 }
 /// Clean up after a vec's resources.
 static inline void FUNC(free)(VEC_NAME *vec) {
+    #ifdef CLEANUP_FN
+    CLEANUP_FN(vec);
+    #endif
     free(vec->data);
     vec->slots = 0;
     vec->count = 0;
@@ -86,11 +96,11 @@ static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
     memcpy(vec->data + vec->count, &value, sizeof(VEC_T));
     vec->count++;
 
-    vec->top = vec->data + vec->count - 1;
+    vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
 }
 /// Append elements to the end of a vec.
-static inline void FUNC(append)(VEC_NAME *vec, const VEC_T *values, size_t size) {
-    for (size_t i = 0; i < size; ++i)
+static inline void FUNC(append)(VEC_NAME *vec, const VEC_T *values, SIZE_T size) {
+    for (SIZE_T i = 0; i < size; ++i)
         FUNC(push)(vec, values[i]);
 }
 /// Pop an element from the end of a vec.
@@ -104,11 +114,11 @@ static inline VEC_T FUNC(pop)(VEC_NAME *vec) {
     if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
         vec->data = realloc(vec->data, (vec->slots /= 2) * sizeof(VEC_T));
 
-    vec->top = vec->data + vec->count - 1;
+    vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
     return data;
 }
 /// Insert an element at a specified index.
-static inline void FUNC(insert)(VEC_NAME *vec, const size_t index, const VEC_T value) {
+static inline void FUNC(insert)(VEC_NAME *vec, const SIZE_T index, const VEC_T value) {
     assert(index <= vec->count && "Index out of bounds of vec.");
     if (index > vec->count)
         return;
@@ -124,31 +134,31 @@ static inline void FUNC(insert)(VEC_NAME *vec, const size_t index, const VEC_T v
     memcpy(vec->data + (index + 1), vec->data + index, sizeof(VEC_T) * (vec->count - index - 1));
     memcpy(vec->data + index, &value, sizeof(VEC_T));
 
-    vec->top = vec->data + vec->count - 1;
+    vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
 }
 /// Set the value at a specified index.
-static inline void FUNC(set)(const VEC_NAME *vec, const size_t index, const void *data) {
+static inline void FUNC(set)(const VEC_NAME *vec, const SIZE_T index, VEC_T data) {
     assert(index < vec->count && "Index out of bounds of vec.");
     if (index >= vec->count)
         return;
-    memcpy(vec->data + index, data, sizeof(VEC_T));
+    vec->data[index] = data;
 }
 /// Get the value at a specified index.
-static inline VEC_T FUNC(get)(const VEC_NAME *vec, const size_t index) {
+static inline VEC_T FUNC(get)(const VEC_NAME *vec, const SIZE_T index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     if (index >= vec->count)
         return (VEC_T){0};
     return *(vec->data + index);
 }
 /// Delete the value at the specified index.
-static inline void FUNC(delete)(VEC_NAME *vec, const size_t index) {
+static inline void FUNC(delete)(VEC_NAME *vec, const SIZE_T index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     vec->count--;
     if (vec->count - index > 0)
         memcpy(vec->data + index, vec->data + (index + 1), (vec->count - index) * (sizeof(VEC_T)));
     if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
         vec->data = realloc(vec->data, vec->slots /= 2);
-    vec->top = vec->data + vec->count - 1;
+    vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
 }
 
 #undef VEC_NAME
@@ -157,3 +167,9 @@ static inline void FUNC(delete)(VEC_NAME *vec, const size_t index) {
 #undef CAT
 #undef EXPAND_CAT
 #undef FUNC
+#ifdef CLEANUP_FN
+#undef CLEANUP_FN
+#endif
+#ifndef SIZE_T
+#undef SIZE_T
+#endif

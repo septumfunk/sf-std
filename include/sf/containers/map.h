@@ -12,6 +12,7 @@
  * Optionally, #define:
  * - uint32_t (*HASH_FN)(const MAP_K)
  * - bool (*EQUAL_FN)(const MAP_K, const MAP_K)
+ * - void (*CLEANUP_FN)(MAP_NAME *)
 ***********************************/
 
 #ifndef MAP_NAME
@@ -68,7 +69,7 @@ static inline BUCKET *FUNC(push_kv)(BUCKET *list, BUCKET *new) {
 }
 
 /// A map that uses user defined types for keys/values.
-typedef struct {
+typedef struct MAP_NAME {
     size_t bucket_count; /// Expands to reduce conflicts as the map grows.
     size_t pair_count; /// The amount of key/value pairs currently held within the map.
     BUCKET **buckets;
@@ -106,6 +107,9 @@ static inline void FUNC(clear)(MAP_NAME *map) {
 }
 /// Free all of a map's resources.
 static inline void FUNC(free)(MAP_NAME *map) {
+    #ifdef CLEANUP_FN
+    CLEANUP_FN(map);
+    #endif
     FUNC(clear)(map);
     free(map->buckets);
     map->buckets = NULL;
@@ -121,9 +125,9 @@ static inline void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
     if (!map->buckets || !map->bucket_count)
         return;
     BUCKET *pairs = NULL;
+    BUCKET *p_last = NULL;
     for (size_t i = 0; i < map->bucket_count; ++i) {
         BUCKET *pair = map->buckets[i];
-        BUCKET *p_last = NULL;
         map->buckets[i] = NULL;
 
         while (pair) {
@@ -135,7 +139,6 @@ static inline void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
             p_last = pair;
             pair = pair->next;
         }
-        if (p_last) p_last->next = NULL;
     }
 
     BUCKET **new_buffer = realloc(map->buckets, new_bucket_count * sizeof(BUCKET *));
@@ -156,7 +159,7 @@ static inline void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
 static inline EX FUNC(get)(const MAP_NAME *map, MAP_K key) {
     if (!map->buckets || !map->bucket_count)
         return EXPAND_CAT(EX, _err)();
-    const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;
+    const uint32_t hash = HASH_FN(key) % map->bucket_count;
 
     const BUCKET *seek = map->buckets[hash];
     while (seek) {
@@ -180,7 +183,7 @@ static inline void FUNC(delete)(MAP_NAME *map, MAP_K key) {
     if (!map->buckets || !map->bucket_count)
         return;
 
-    const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;
+    const uint32_t hash = HASH_FN(key) % map->bucket_count;
     BUCKET *seek = map->buckets[hash];
     BUCKET *seek_p = NULL;
     while (seek) {
@@ -192,12 +195,12 @@ static inline void FUNC(delete)(MAP_NAME *map, MAP_K key) {
             if (seek_p)
                 seek_p->next = seek->next;
             free(seek);
+            map->pair_count--;
             break;
         }
         seek_p = seek;
         seek = seek->next;
     }
-    map->pair_count--;
 }
 /// Set the value at the requested key, overriding any existing value.
 static inline void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
@@ -206,7 +209,7 @@ static inline void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
     if (FUNC(get)(map, key).is_ok)
         FUNC(delete)(map, key);
 
-    const uint32_t hash = HASH_FN(key) & map->bucket_count - 1;
+    const uint32_t hash = HASH_FN(key) % map->bucket_count;
     BUCKET *pair = malloc(sizeof(BUCKET));
     memcpy(pair, &(BUCKET) {
         key,
@@ -215,6 +218,9 @@ static inline void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
     }, sizeof(BUCKET));
     map->buckets[hash] = FUNC(push_kv)(map->buckets[hash], pair);
     map->pair_count++;
+
+    if (FUNC(load)(map, map->bucket_count) > 0.75)
+        FUNC(rehash)(map, map->bucket_count * 2);
 }
 /// Loop over a map's key/value pairs and execute custom code with them.
 static inline void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP_K key, MAP_V value), void *ud) {
@@ -234,6 +240,9 @@ static inline void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP
 #undef MAP_V
 #undef HASH_FN
 #undef EQUAL_FN
+#ifdef CLEANUP_FN
+#undef CLEANUP_FN
+#endif
 
 #undef CAT
 #undef EXPAND_CAT
