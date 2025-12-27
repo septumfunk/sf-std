@@ -124,33 +124,27 @@ static inline double FUNC(load)(const MAP_NAME *map, const size_t bucket_count) 
 static inline void FUNC(rehash)(MAP_NAME *map, const size_t new_bucket_count) {
     if (!map->buckets || !map->bucket_count)
         return;
-    BUCKET *pairs = NULL;
-    BUCKET *p_last = NULL;
-    for (size_t i = 0; i < map->bucket_count; ++i) {
-        BUCKET *pair = map->buckets[i];
-        map->buckets[i] = NULL;
 
+    BUCKET **old_buckets = map->buckets;
+    size_t old_count = map->bucket_count;
+
+    // Allocate new bucket array
+    map->buckets = calloc(new_bucket_count, sizeof(BUCKET *));
+    map->bucket_count = new_bucket_count;
+
+    // Reinsert all pairs
+    for (size_t i = 0; i < old_count; ++i) {
+        BUCKET *pair = old_buckets[i];
         while (pair) {
-            if (!pairs)
-                pairs = pair;
-            if (p_last)
-                p_last->next = pair;
-
-            p_last = pair;
-            pair = pair->next;
+            BUCKET *next = pair->next;
+            uint32_t hash = HASH_FN(pair->key) % new_bucket_count;
+            pair->next = map->buckets[hash];
+            map->buckets[hash] = pair;
+            pair = next;
         }
     }
 
-    BUCKET **new_buffer = realloc(map->buckets, new_bucket_count * sizeof(BUCKET *));
-    map->bucket_count = new_bucket_count;
-    map->buckets = new_buffer;
-
-    while (pairs) {
-        BUCKET *next = pairs->next;
-        const uint32_t hash = HASH_FN(pairs->key) & map->bucket_count - 1;
-        map->buckets[hash] = FUNC(push_kv)(map->buckets[hash], pairs);
-        pairs = next;
-    }
+    free(old_buckets);
 }
 
 #define EX EXPAND_CAT(MAP_NAME, _ex)
@@ -162,6 +156,7 @@ static inline EX FUNC(get)(const MAP_NAME *map, MAP_K key) {
     const uint32_t hash = HASH_FN(key) % map->bucket_count;
 
     const BUCKET *seek = map->buckets[hash];
+    const void *s = seek; (void)s;
     while (seek) {
         #ifndef EQUAL_FN
         if (key == seek->key)
@@ -211,11 +206,11 @@ static inline void FUNC(set)(MAP_NAME *map, MAP_K key, MAP_V value) {
 
     const uint32_t hash = HASH_FN(key) % map->bucket_count;
     BUCKET *pair = malloc(sizeof(BUCKET));
-    memcpy(pair, &(BUCKET) {
+    *pair = (BUCKET) {
         key,
         value,
         NULL
-    }, sizeof(BUCKET));
+    };
     map->buckets[hash] = FUNC(push_kv)(map->buckets[hash], pair);
     map->pair_count++;
 
