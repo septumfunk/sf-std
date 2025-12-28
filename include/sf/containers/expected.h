@@ -16,7 +16,7 @@
 #define FUNC(name) EXPAND_CAT(EXPECTED_NAME, _##name)
 
 /// An expected Ok or Err value, with user defined types.
-typedef struct {
+typedef struct EXPECTED_NAME {
     bool is_ok;
     #if defined(EXPECTED_O) || defined(EXPECTED_E)
     union {
