@@ -26,19 +26,19 @@ typedef struct EXPECTED_NAME {
         #ifdef EXPECTED_E
         EXPECTED_E err;
         #endif
-    } value;
+    };
     #endif
 } EXPECTED_NAME;
 
 /// Create an Ok variant of the expected.
 #ifdef EXPECTED_O
-static inline EXPECTED_NAME FUNC(ok)(EXPECTED_O ok) { return (EXPECTED_NAME) { .is_ok = true, .value.ok = ok, }; }
+static inline EXPECTED_NAME FUNC(ok)(EXPECTED_O ok) { return (EXPECTED_NAME) { .is_ok = true, .ok = ok, }; }
 #else
 static inline EXPECTED_NAME FUNC(ok)(void) { return (EXPECTED_NAME) { .is_ok = true }; }
 #endif
 /// Create an Err variant of the expected.
 #ifdef EXPECTED_E
-static inline EXPECTED_NAME FUNC(err)(EXPECTED_E err) { return (EXPECTED_NAME) { .is_ok = false, .value.err = err, }; }
+static inline EXPECTED_NAME FUNC(err)(EXPECTED_E err) { return (EXPECTED_NAME) { .is_ok = false, .err = err, }; }
 #else
 static inline EXPECTED_NAME FUNC(err)(void) { return (EXPECTED_NAME) { .is_ok = false }; }
 #endif
