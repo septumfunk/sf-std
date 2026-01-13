@@ -170,6 +170,6 @@ static inline void FUNC(delete)(VEC_NAME *vec, const VSIZE_T index) {
 #ifdef CLEANUP_FN
 #undef CLEANUP_FN
 #endif
-#ifndef VSIZE_T
+#ifdef VSIZE_T
 #undef VSIZE_T
 #endif
