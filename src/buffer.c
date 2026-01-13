@@ -1,7 +1,7 @@
-#include "sf/containers/buffer.h"
-#include "sf/math.h"
 #include <stdlib.h>
 #include <string.h>
+#include "sf/containers/buffer.h"
+#include "sf/math.h"
 
 sf_buffer sf_buffer_fixed(const size_t size) {
     uint8_t *dat = calloc(1, size);
