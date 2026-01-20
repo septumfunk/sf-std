@@ -13,6 +13,7 @@
  * - uint32_t (*HASH_FN)(const MAP_K)
  * - bool (*EQUAL_FN)(const MAP_K, const MAP_K)
  * - void (*CLEANUP_FN)(MAP_NAME *)
+ * - void (*KCLEANUP)(MAP_K)
 ***********************************/
 
 #ifndef MAP_NAME
@@ -187,8 +188,11 @@ static inline void FUNC(delete)(MAP_NAME *map, MAP_K key) {
         #else
         if (EQUAL_FN(key, seek->key)) {
         #endif
-            if (seek_p)
-                seek_p->next = seek->next;
+            if (seek_p) seek_p->next = seek->next;
+            else map->buckets[hash] = seek->next;
+            #ifdef KCLEANUP
+            KCLEANUP(seek->key);
+            #endif
             free(seek);
             map->pair_count--;
             break;
