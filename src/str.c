@@ -36,6 +36,8 @@ sf_str sf_str_join(const sf_str str1, const sf_str str2) {
 }
 
 void sf_str_append(sf_str *str1, const sf_str str2) {
+    if (sf_isempty(str2))
+        return;
     const size_t s = str1->len + str2.len;
     str1->flags &= ~SF_STR_EMPTYF;
     str1->c_str = realloc(str1->c_str, s + 1);
