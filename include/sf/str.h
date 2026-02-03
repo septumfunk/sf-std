@@ -25,8 +25,8 @@ typedef struct {
 #define SF_STR_EMPTY (sf_str) { NULL, 0, SF_STR_EMPTYF }
 
 #define sf_lit(literal) ((sf_str) { .c_str = (char *)(literal), .len = sizeof(literal) - 1, .flags = SF_STR_CONST | SF_STR_LIT })
-#define sf_ref(cstr) ((sf_str) { .c_str = (char *)(cstr), .len = strlen(cstr), .flags = SF_STR_CONST })
-#define sf_own(cstr) ((sf_str) { .c_str = (char *)(cstr), .len = strlen(cstr), .flags = SF_STR_NONE })
+#define sf_ref(cstr) ((cstr) ? (sf_str) { .c_str = (char *)(cstr), .len = strlen(cstr), .flags = SF_STR_CONST } : SF_STR_EMPTY)
+#define sf_own(cstr) ((cstr) ? (sf_str) { .c_str = (char *)(cstr), .len = strlen(cstr), .flags = SF_STR_NONE } : SF_STR_EMPTY)
 
 #define sf_islit(string) ((string).flags & SF_STR_LIT)
 #define sf_isempty(string) ((string).flags & SF_STR_EMPTYF)
