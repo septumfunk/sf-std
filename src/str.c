@@ -53,6 +53,7 @@ sf_str sf_str_dup(const sf_str string) {
 }
 
 int sf_str_cmp(const sf_str str1, const sf_str str2) {
+    if (str1.c_str == str2.c_str || (str1.len == 0 && str2.len == 0)) return 0;
     char *a = str1.c_str, *b = str2.c_str;
     for (; *a && *b && *a == *b; ++a, ++b) {}
     return *b - *a;
