@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "sanitizers.h"
@@ -23,8 +24,15 @@
 #define VEC_T void *
 #endif
 
+#ifdef VSIZE_T
+#ifndef VSIZE_MAX
+#error Undefined size VSIZE_MAX
+#endif
+#endif
+
 #ifndef VSIZE_T
 #define VSIZE_T size_t
+#define VSIZE_MAX SIZE_MAX
 #endif
 
 #define CAT(a, b) a##b
@@ -83,6 +91,7 @@ static inline void FUNC(free)(VEC_NAME *vec) {
 }
 /// Push an element to the end of a vec.
 static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
+    assert(vec->count != VSIZE_MAX && "Vec reached max size");
     if (!vec->data || !vec->count || !vec->slots) {
         __lsan_disable();
         vec->data = calloc(INITIAL_SIZE, sizeof(VEC_T));
@@ -91,7 +100,7 @@ static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
     }
 
     if (vec->count == vec->slots) // Vector is full, double size.
-        vec->data = realloc(vec->data, (vec->slots *= 2) * sizeof(VEC_T));
+        vec->data = realloc(vec->data, (vec->slots > VSIZE_MAX / 2 ? (vec->slots = VSIZE_MAX) : (vec->slots *= 2)) * sizeof(VEC_T));
 
     memcpy(vec->data + vec->count, &value, sizeof(VEC_T));
     vec->count++;
@@ -122,8 +131,9 @@ static inline void FUNC(insert)(VEC_NAME *vec, const VSIZE_T index, const VEC_T 
     assert(index <= vec->count && "Index out of bounds of vec.");
     if (index > vec->count)
         return;
-    if (vec->count == vec->slots) // Vector is full, double size.
-        vec->data = realloc(vec->data, (vec->slots *= 2) * sizeof(VEC_T));
+
+    if (vec->count == vec->slots && vec->slots * 2 < VSIZE_MAX) // Vector is full, double size.
+        vec->data = realloc(vec->data, (vec->slots > VSIZE_MAX / 2 ? (vec->slots = VSIZE_MAX) : (vec->slots *= 2)) * sizeof(VEC_T));
 
     if (index == vec->count) {
         FUNC(push)(vec, value);
