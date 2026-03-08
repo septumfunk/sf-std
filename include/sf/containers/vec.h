@@ -91,16 +91,19 @@ static inline void FUNC(free)(VEC_NAME *vec) {
 }
 /// Push an element to the end of a vec.
 static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
-    assert(vec->count != VSIZE_MAX && "Vec reached max size");
-    if (!vec->data || !vec->count || !vec->slots) {
+    if (!vec->data || !vec->slots) {
         __lsan_disable();
         vec->data = calloc(INITIAL_SIZE, sizeof(VEC_T));
         __lsan_enable();
         vec->slots = INITIAL_SIZE;
     }
 
-    if (vec->count == vec->slots) // Vector is full, double size.
-        vec->data = realloc(vec->data, (vec->slots > VSIZE_MAX / 2 ? (vec->slots = VSIZE_MAX) : (vec->slots *= 2)) * sizeof(VEC_T));
+    if (vec->count == vec->slots) { // Vector is full, double size.
+        VEC_T *n = realloc(vec->data, (vec->slots *= 2) * sizeof(VEC_T));
+        assert(n && "Out of memory");
+        if (!n) exit(1);
+        vec->data = n;
+    }
 
     memcpy(vec->data + vec->count, &value, sizeof(VEC_T));
     vec->count++;
@@ -120,8 +123,12 @@ static inline VEC_T FUNC(pop)(VEC_NAME *vec) {
 
     vec->count--;
     VEC_T data = *(vec->data + vec->count);
-    if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
-        vec->data = realloc(vec->data, (vec->slots /= 2) * sizeof(VEC_T));
+    if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 4) { // Reduce size if possible
+        VEC_T *n = realloc(vec->data, (vec->slots /= 2) * sizeof(VEC_T));
+        assert(n && "Out of memory");
+        if (!n) exit(1);
+        vec->data = n;
+    }
 
     vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
     return data;
@@ -131,9 +138,12 @@ static inline void FUNC(insert)(VEC_NAME *vec, const VSIZE_T index, const VEC_T 
     assert(index <= vec->count && "Index out of bounds of vec.");
     if (index > vec->count)
         return;
-
-    if (vec->count == vec->slots && vec->slots * 2 < VSIZE_MAX) // Vector is full, double size.
-        vec->data = realloc(vec->data, (vec->slots > VSIZE_MAX / 2 ? (vec->slots = VSIZE_MAX) : (vec->slots *= 2)) * sizeof(VEC_T));
+    if (vec->count == vec->slots) { // Vector is full, double size.
+        VEC_T *n = realloc(vec->data, (vec->slots *= 2) * sizeof(VEC_T));
+        assert(n && "Out of memory");
+        if (!n) exit(1);
+        vec->data = n;
+    }
 
     if (index == vec->count) {
         FUNC(push)(vec, value);
@@ -167,7 +177,7 @@ static inline void FUNC(delete)(VEC_NAME *vec, const VSIZE_T index) {
     if (vec->count - index > 0)
         memcpy(vec->data + index, vec->data + (index + 1), (vec->count - index) * (sizeof(VEC_T)));
     if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
-        vec->data = realloc(vec->data, vec->slots /= 2);
+        vec->data = realloc(vec->data, (vec->slots /= 2) * sizeof(VEC_T));
     vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
 }
 
