@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "sanitizers.h"
 
 #pragma GCC diagnostic ignored "-Wunused-function"
 
@@ -92,9 +91,7 @@ static inline void FUNC(free)(VEC_NAME *vec) {
 /// Push an element to the end of a vec.
 static inline void FUNC(push)(VEC_NAME *vec, const VEC_T value) {
     if (!vec->data || !vec->slots) {
-        __lsan_disable();
         vec->data = calloc(INITIAL_SIZE, sizeof(VEC_T));
-        __lsan_enable();
         vec->slots = INITIAL_SIZE;
     }
 
@@ -151,8 +148,8 @@ static inline void FUNC(insert)(VEC_NAME *vec, const VSIZE_T index, const VEC_T 
     }
     vec->count++;
 
-    memcpy(vec->data + (index + 1), vec->data + index, sizeof(VEC_T) * (vec->count - index - 1));
-    memcpy(vec->data + index, &value, sizeof(VEC_T));
+    memmove(vec->data + (index + 1), vec->data + index, sizeof(VEC_T) * (vec->count - index - 1));
+    memmove(vec->data + index, &value, sizeof(VEC_T));
 
     vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
 }
@@ -175,7 +172,7 @@ static inline void FUNC(delete)(VEC_NAME *vec, const VSIZE_T index) {
     assert(index < vec->count && "Index out of bounds of vec.");
     vec->count--;
     if (vec->count - index > 0)
-        memcpy(vec->data + index, vec->data + (index + 1), (vec->count - index) * (sizeof(VEC_T)));
+        memmove(vec->data + index, vec->data + (index + 1), (vec->count - index) * (sizeof(VEC_T)));
     if (vec->slots > INITIAL_SIZE && vec->count <= vec->slots / 2) // Reduce size if possible
         vec->data = realloc(vec->data, (vec->slots /= 2) * sizeof(VEC_T));
     vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
