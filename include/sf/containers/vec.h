@@ -189,4 +189,5 @@ static inline void FUNC(delete)(VEC_NAME *vec, const VSIZE_T index) {
 #endif
 #ifdef VSIZE_T
 #undef VSIZE_T
+#undef VSIZE_MAX
 #endif
