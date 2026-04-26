@@ -38,7 +38,7 @@ sf_buffer_ex sf_buffer_insert(sf_buffer *buffer, const void *const ptr, const si
             buffer->size = size;
             buffer->ptr = malloc(size);
             buffer->head = buffer->ptr;
-            buffer->flags &= ~SF_BUFFER_EMPTY;
+            buffer->flags &= (uint8_t)~SF_BUFFER_EMPTY;
         } else if (buffer->flags & SF_BUFFER_GROW) {
             const long long ofs = buffer->head - buffer->ptr;
             buffer->size += size - offset;

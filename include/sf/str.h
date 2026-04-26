@@ -9,12 +9,10 @@
 #include "sf/math.h"
 
 /// Bitfield of flags to define aspects about a `sf_str`
-typedef enum {
-    SF_STR_NONE  = (1u << 0),
-    SF_STR_EMPTYF = (1u << 1),
-    SF_STR_CONST = (1u << 2),
-    SF_STR_LIT   = (1u << 3),
-} sf_str_flag;
+#define SF_STR_NONE (uint8_t)(1u << 0)
+#define SF_STR_EMPTYF (uint8_t)(1u << 1)
+#define SF_STR_CONST (uint8_t)(1u << 2)
+#define SF_STR_LIT (uint8_t)(1u << 3)
 
 /// A simple string wrapper with length.
 typedef struct {
