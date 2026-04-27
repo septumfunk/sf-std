@@ -148,7 +148,7 @@ static inline void FUNC(insert)(VEC_NAME *vec, const VSIZE_T index, const VEC_T 
     }
     vec->count++;
 
-    memmove(vec->data + (index + 1), vec->data + index, sizeof(VEC_T) * (vec->count - index - 1));
+    memmove(vec->data + (index + 1), vec->data + index, sizeof(VEC_T) * (size_t)(vec->count - index - 1));
     memmove(vec->data + index, &value, sizeof(VEC_T));
 
     vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
