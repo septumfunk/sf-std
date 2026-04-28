@@ -135,21 +135,34 @@ static inline void FUNC(insert)(VEC_NAME *vec, const VSIZE_T index, const VEC_T 
     assert(index <= vec->count && "Index out of bounds of vec.");
     if (index > vec->count)
         return;
-    if (vec->count == vec->slots) { // Vector is full, double size.
-        VEC_T *n = realloc(vec->data, (vec->slots *= 2) * sizeof(VEC_T));
-        assert(n && "Out of memory");
-        if (!n) exit(1);
-        vec->data = n;
-    }
 
+    if (!vec->data || !vec->slots) {
+        vec->data = calloc(INITIAL_SIZE, sizeof(VEC_T));
+        assert(vec->data && "Out of memory");
+        if (!vec->data) exit(1);
+        vec->slots = INITIAL_SIZE;
+    }
     if (index == vec->count) {
         FUNC(push)(vec, value);
         return;
     }
-    vec->count++;
 
-    memmove(vec->data + (index + 1), vec->data + index, sizeof(VEC_T) * (size_t)(vec->count - index - 1));
-    memmove(vec->data + index, &value, sizeof(VEC_T));
+    if (vec->count == vec->slots) {
+        VSIZE_T new_slots = vec->slots * 2;
+        VEC_T *n = realloc(vec->data, new_slots * sizeof(VEC_T));
+        assert(n && "Out of memory");
+        if (!n) exit(1);
+        vec->data = n;
+        vec->slots = new_slots;
+    }
+
+    memmove(
+        vec->data + index + 1,
+        vec->data + index,
+        sizeof(VEC_T) * (size_t)(vec->count - index)
+    );
+    memcpy(vec->data + index, &value, sizeof(VEC_T));
+    vec->count++;
 
     vec->top = vec->count == 0 ? vec->data : vec->data + vec->count - 1;
 }
