@@ -242,6 +242,9 @@ static inline void FUNC(foreach)(const MAP_NAME *map, void (*func)(void *ud, MAP
 #ifdef CLEANUP_FN
 #undef CLEANUP_FN
 #endif
+#ifdef KCLEANUP
+#undef KCLEANUP
+#endif
 
 #undef CAT
 #undef EXPAND_CAT
